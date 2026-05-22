@@ -1,0 +1,43 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# CAD backups / lock / autosave
+*.bak
+*.bak[0-9]
+*.f3d.lock
+*.FCStd1
+~$*.SLDPRT
+~$*.SLDASM
+~$*.SLDDRW
+
+# KiCad backups
+*-backups/
+*.kicad_pcb-bak
+*.kicad_sch-bak
+fp-info-cache
+
+# Build / fab output
+build/
+dist/
+out/
+*.zip.tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Logs
+*.log

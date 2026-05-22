@@ -1,0 +1,9 @@
+qty,category,part,description,supplier,link,unit_price_usd,notes
+1,frame,top_board,Desk top 1400x700x25mm,,,,wood or bamboo
+2,frame,leg_assembly,Lift leg with motor,,,,
+4,frame,foot_pad,Rubber foot pad,,,,
+1,frame,cable_tray,Under-desk cable tray,,,,
+1,electronics,controller_box,3D printed enclosure,self,,,from cad/stl
+,fasteners,m4_screws_pack,M4 socket head screws,,,,assorted lengths
+,fasteners,m6_screws_pack,M6 socket head screws,,,,
+,fasteners,inserts,M4 heat-set inserts,,,,

@@ -1,0 +1,69 @@
+# Default
+* text=auto eol=lf
+
+# Small binaries (NOT in LFS — keep in regular git)
+*.png binary
+*.jpg binary
+
+# ----------------------------------------------------------------------------
+# Git LFS — large binary files
+# ----------------------------------------------------------------------------
+
+# CAD - neutral formats
+*.step  filter=lfs diff=lfs merge=lfs -text
+*.stp   filter=lfs diff=lfs merge=lfs -text
+*.iges  filter=lfs diff=lfs merge=lfs -text
+*.igs   filter=lfs diff=lfs merge=lfs -text
+*.x_t   filter=lfs diff=lfs merge=lfs -text
+*.x_b   filter=lfs diff=lfs merge=lfs -text
+
+# CAD - source formats
+*.f3d    filter=lfs diff=lfs merge=lfs -text
+*.f3z    filter=lfs diff=lfs merge=lfs -text
+*.FCStd  filter=lfs diff=lfs merge=lfs -text
+*.SLDPRT filter=lfs diff=lfs merge=lfs -text
+*.SLDASM filter=lfs diff=lfs merge=lfs -text
+*.SLDDRW filter=lfs diff=lfs merge=lfs -text
+
+# 3D print / mesh
+*.stl  filter=lfs diff=lfs merge=lfs -text
+*.3mf  filter=lfs diff=lfs merge=lfs -text
+*.obj  filter=lfs diff=lfs merge=lfs -text
+
+# 2D CAD
+*.dxf filter=lfs diff=lfs merge=lfs -text
+*.dwg filter=lfs diff=lfs merge=lfs -text
+
+# PCB / electronics
+*.kicad_pcb filter=lfs diff=lfs merge=lfs -text
+*.kicad_sch filter=lfs diff=lfs merge=lfs -text
+*.kicad_pro filter=lfs diff=lfs merge=lfs -text
+*.gbr       filter=lfs diff=lfs merge=lfs -text
+*.drl       filter=lfs diff=lfs merge=lfs -text
+
+# Archives
+*.zip    filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.7z     filter=lfs diff=lfs merge=lfs -text
+*.rar    filter=lfs diff=lfs merge=lfs -text
+
+# Video
+*.mp4  filter=lfs diff=lfs merge=lfs -text
+*.mov  filter=lfs diff=lfs merge=lfs -text
+*.mkv  filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
+
+# Big graphics
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.ai  filter=lfs diff=lfs merge=lfs -text
+*.eps filter=lfs diff=lfs merge=lfs -text
+
+# 3D scene / render
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.fbx   filter=lfs diff=lfs merge=lfs -text
+*.glb   filter=lfs diff=lfs merge=lfs -text
+*.gltf  filter=lfs diff=lfs merge=lfs -text
+
+# Docs
+*.pdf filter=lfs diff=lfs merge=lfs -text
