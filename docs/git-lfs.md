@@ -31,12 +31,12 @@ git lfs install
 After LFS is installed, just clone normally. LFS files download automatically.
 
 ```
-git clone https://github.com/autonomous-ai/autonomous-smart-desk-pro.git
+git clone https://github.com/autonomous-ai/autonomous-desk.git
 ```
 
 If you already cloned before installing LFS, run:
 ```
-cd autonomous-smart-desk-pro
+cd autonomous-desk
 git lfs install
 git lfs pull
 ```

@@ -1,4 +1,4 @@
-# Autonomous Smart Desk Pro
+# Autonomous Desk
 
 <img width="1462" height="542" alt="image" src="https://github.com/user-attachments/assets/88168ab0-b947-41aa-a43a-dae955544b84" />
 
@@ -46,7 +46,7 @@ Quick:
 ```
 brew install git-lfs     # macOS
 git lfs install
-git clone https://github.com/autonomous-ai/autonomous-smart-desk-pro.git
+git clone https://github.com/autonomous-ai/autonomous-desk.git
 ```
 
 ## Want to Build One?
