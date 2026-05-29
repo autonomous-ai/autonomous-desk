@@ -1,6 +1,6 @@
 {
-  "name": "vibe-desk-display",
-  "description": "Desk display plugin for Claude Code",
+  "name": "autonomous-desk",
+  "description": "Autonomous Desk plugins for Claude Code",
   "owner": {
     "name": "Autonomous",
     "email": ""

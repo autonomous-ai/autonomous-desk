@@ -17,7 +17,7 @@ Turn your VibeDesk into a live Claude Code usage monitor.
 Open your terminal and run:
 
 ```bash
-claude plugins marketplace add https://github.com/autonomous-ai/vibe-desk-display
+claude plugins marketplace add https://github.com/autonomous-ai/autonomous-desk
 ```
 
 ```bash
