@@ -1,0 +1,18 @@
+{
+  "name": "vibe-desk-display",
+  "description": "Desk display plugin for Claude Code",
+  "owner": {
+    "name": "0x0409",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "vibe-desk-display",
+      "description": "Turn your VibeDesk into a live Claude Code usage monitor",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/autonomous-ai/vibe-desk-display.git"
+      }
+    }
+  ]
+}
