@@ -1,0 +1,27 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: PCB_SD5_Keypad_v1.PcbDoc   11/13/2025  2:55:48 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : PCB_SD5_Keypad_v1-RoundHoles.TXT
+ASCII SlotHoles File : PCB_SD5_Keypad_v1-SlotHoles.TXT
+EIA File   : PCB_SD5_Keypad_v1.DRL
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      10mil (0.249mm)                                           Round             7         PTH        0.48inch (12.23mm)
+T2      12mil (0.3mm)                                             Round             235       PTH        34.40inch (873.83mm)
+T3      16mil (0.399mm)                                           Round             2         PTH        1.31inch (33.39mm)
+T4      20mil (0.5mm)                                             Round             5         PTH        2.64inch (67.12mm)
+T5      24mil (0.599mm)                                           Round             14        PTH        2.61inch (66.26mm)
+T6      28mil (0.701mm)                                           Round             6         PTH        6.21inch (157.85mm)
+T7      32mil (0.8mm)                                             Round             6         PTH        0.50inch (12.70mm)
+T8      35mil (0.899mm)                                           Round             4         PTH        0.30inch (7.62mm)
+T9      41mil (1.049mm)                                           Round             8         PTH        0.83inch (21.00mm)
+T10     138mil (3.5mm)                                            Round             1         PTH        0.00inch (0.00mm)
+T11     138mil (3.5mm)                                            Slot              1         PTH        0.04inch (1.00mm)
+T12     39mil (1.001mm)                                           Round             2         NPTH       0.59inch (15.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              291
+
+Total Processing Time (hh:mm:ss) : 00:00:00
