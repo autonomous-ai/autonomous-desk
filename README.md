@@ -1,6 +1,6 @@
 # Autonomous Desk
 
-<img width="1462" height="542" alt="image" src="https://github.com/user-attachments/assets/88168ab0-b947-41aa-a43a-dae955544b84" />
+<img alt="Autonomous Desk" src="desk_banner.jpeg" />
 
 Whether you're learning, experimenting, or building your own version, the goal is to make advanced smart hardware accessible to everyone.
 
