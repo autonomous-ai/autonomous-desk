@@ -49,7 +49,13 @@ That's it — your device is paired.
 
 Once paired, the display automatically shows a **"Task Done"** notification whenever Claude completes a task. If your usage is **≥ 80%** (5-hour or 7-day), it will also show your current usage stats right after.
 
-You can change the threshold by editing `~/.config/autonomous-lcd.json`:
+You can change the threshold just by asking Claude in plain language:
+
+- "warn me earlier" / "show my usage sooner"
+- "set my warning threshold to 60"
+- "only warn me near the limit"
+
+Claude updates the config for you. Or edit `~/.config/autonomous-lcd.json` by hand:
 
 ```json
 {

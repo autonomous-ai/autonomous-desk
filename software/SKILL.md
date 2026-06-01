@@ -5,9 +5,11 @@ description: >
   Supports pairing, sending notifications with plain text,
   rich layout (positioned text, shapes, progress bars), and buzzer sounds.
   Sends task-done notification + usage data when Claude completes a task.
+  Lets the user tune the usage-warning threshold by voice.
   Triggers: "pair my display", "show on my screen", "notify my display",
   "ping my display when done", "send to my screen",
-  "show my usage on display", "unpair my display".
+  "show my usage on display", "unpair my display",
+  "change my usage threshold", "warn me earlier", "set warning threshold to N".
 allowed-tools: Bash(*)
 ---
 
@@ -244,6 +246,25 @@ Set `usage_threshold` (integer, 0–100) in `~/.config/autonomous-lcd.json` to c
   "usage_threshold": 80
 }
 ```
+
+### 5.1 Adjust Threshold (voice command)
+
+Let the user retune the auto-warning threshold in plain language — no need to edit JSON by hand.
+
+**When to use:** "change my usage threshold", "warn me earlier", "set warning threshold to 60", "only warn me near the limit", "show usage sooner", "I want alerts at 90%".
+
+**Procedure:**
+
+1. Parse the target percentage from the request.
+   - Explicit number ("set threshold to 60") → use it.
+   - "warn me earlier" / "sooner" → lower it (e.g. 60). "only near the limit" / "at the brink" → raise it (e.g. 90).
+   - If no number can be inferred, ask: "What percentage should I warn you at? (0–100)"
+2. Validate: integer **0–100**. Reject anything outside the range and ask again.
+3. Read `~/.config/autonomous-lcd.json` (if missing → tell the user to pair a display first).
+4. Set `usage_threshold` to the new value, preserving all other keys (`devices`, `default_device_id`, etc.). Write back as valid JSON with file permission `0600`.
+5. Confirm to the user in plain language, e.g. **"Done — I'll pop your usage on the display once you hit 60% in either window."**
+
+Note: `usage_threshold` only controls **when usage auto-displays** after a task. The progress-bar colors (green <60, orange 60–79, red ≥80) are independent and do not change with this value.
 
 ---
 
