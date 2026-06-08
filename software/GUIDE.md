@@ -73,6 +73,34 @@ You can also:
 
 ---
 
+## Builder insights
+
+Beyond live usage, the display can show your **builder profile** — derived from
+your local Claude Code session history. It runs entirely on your machine;
+nothing is uploaded.
+
+Type:
+
+```
+/vibe-desk-display:insights
+```
+
+or just ask "show my builder profile". The display rotates through a set of cards:
+
+- **Archetype** — e.g. *The Architect*, *Night Owl*, *Velocity Machine* — plus your day streak
+- **Rhythm** — your peak coding hour, session and prompt counts
+- **Top model** — the model you use most, plus total tool calls
+- **Token economy** — output tokens and cache-hit rate
+- **Builder style** — words per prompt, tools per turn, course-correct rate
+- **Top projects** and **Top tool**
+
+Once paired, one insight card is also folded into the regular usage refresh, so
+the display gently cycles through your profile over time. To turn this off and
+keep the ambient display usage-only, set `"show_insights": false` in
+`~/.config/autonomous-lcd.json` (default is `true`).
+
+---
+
 ## Update the plugin
 
 ```bash

@@ -392,6 +392,45 @@ Progress bar color: green `#6b8f4e` (<60%), orange `#d4845a` (60-79%), red `#c03
 
 ---
 
+## 6b. Builder Insights (local transcript analysis)
+
+A privacy-first, on-device builder profile derived from the user's local
+Claude Code session transcripts (`~/.claude/projects/**/*.jsonl`). Inspired by
+Paxel, but nothing leaves the machine — no network, no upload.
+
+**When to use:** "show my builder profile", "what kind of coder am I",
+"/vibe-desk-display:insights", "rotate my insights on the display".
+
+### Run
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/insights.py --display   # rotate all cards
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/insights.py --json      # numbers only
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/insights.py --card N    # send one card (daemon use)
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/insights.py --fresh     # bypass the 1h cache
+```
+
+The engine computes: archetype (e.g. "The Architect", "Night Owl"), day streak,
+peak coding hour, sessions/prompts, top model, token economy + cache-hit rate,
+steering style (words/prompt, course-correct rate), velocity (tools/turn, edits),
+and top projects. The profile is cached to `~/.config/autonomous-lcd-insights.json`
+(TTL 1h) so the daemon doesn't re-scan every transcript each tick.
+
+### Cards (rotation order)
+
+archetype → rhythm → top model → token economy → builder style → top projects → top tool
+
+### Config: `show_insights`
+
+When the launchd usage daemon (`lcd-usage-daemon.py`) runs, it appends **one**
+rotating insight card after the usage sections, advancing through the rotation
+each tick (index in `~/.config/autonomous-lcd-insights.idx`). Set
+`"show_insights": false` in `~/.config/autonomous-lcd.json` to disable this and
+keep the ambient display usage-only. Default: **true**. Insight failures are
+swallowed and never affect the usage display.
+
+---
+
 ## 7. Rich Layout Reference
 
 ### Item types

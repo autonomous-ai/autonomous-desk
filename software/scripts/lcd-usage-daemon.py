@@ -10,6 +10,8 @@ import urllib.request
 from datetime import datetime, timezone
 
 CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
+INSIGHT_IDX_PATH = os.path.expanduser("~/.config/autonomous-lcd-insights.idx")
+INSIGHTS_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "insights.py")
 LOG_PREFIX = "lcd-daemon"
 LCD_PORT = 3000
 SEND_DELAY = 7
@@ -142,6 +144,27 @@ def send_to_lcd(ip, device_id, payload):
 
 
 
+def rotate_insight_card(cfg):
+    """After usage, push one rotating builder-insight card. Best-effort:
+    any failure here must never affect the usage display."""
+    if not cfg.get("show_insights", True):
+        return
+    try:
+        idx = int(open(INSIGHT_IDX_PATH).read().strip())
+    except Exception:
+        idx = 0
+    try:
+        subprocess.run(
+            [sys.executable, INSIGHTS_SCRIPT, "--card", str(idx)],
+            timeout=20, capture_output=True,
+        )
+        with open(INSIGHT_IDX_PATH, "w") as f:
+            f.write(str(idx + 1))
+        log(f"Insight card {idx} sent")
+    except Exception as e:
+        log(f"Insight card skipped: {e}")
+
+
 def main():
     try:
         cfg = load_config()
@@ -183,6 +206,9 @@ def main():
     except Exception as e:
         log(f"Send failed: {e}")
         sys.exit(1)
+
+    time.sleep(SEND_DELAY)
+    rotate_insight_card(cfg)
 
 
 if __name__ == "__main__":

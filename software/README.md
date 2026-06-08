@@ -18,6 +18,7 @@ See the full [Setup Guide](GUIDE.md) for details.
 ## Features
 
 - **Task done + usage display** — when Claude completes a task, shows a "Task Done" notification followed by 5-hour and 7-day usage
+- **Builder insights** — analyze your local Claude Code sessions on-device and rotate a builder profile (archetype, peak hour, top model, token economy, style) across the display. Inspired by [Paxel](https://paxel.ycombinator.com/), but nothing leaves your machine
 - **Notifications** — send custom messages to the screen ("notify my display when done")
 - **OTP pairing** — no sticker reading, just enter the code shown on screen
 - **Zero dependencies** — Python 3 stdlib only, no pip install needed
@@ -27,6 +28,7 @@ See the full [Setup Guide](GUIDE.md) for details.
 | Command | Description |
 |---------|-------------|
 | `/vibe-desk-display:usage` | Refresh usage display now |
+| `/vibe-desk-display:insights` | Analyze local sessions, rotate builder profile on display |
 | `/vibe-desk-display:notify` | Send a notification |
 
 Or use natural language: "show my usage on display", "notify my display", "unpair my display"
