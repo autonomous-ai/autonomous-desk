@@ -282,6 +282,31 @@ def fmt_hour(h):
     return f"{hh}{suffix}"
 
 
+# The device font is ~6px wide per character at size 1, scaling linearly with
+# the size multiplier. The content viewport is 220px wide, so pick the largest
+# size (down to 1) whose rendered width fits the box — keeps long archetype
+# names, model ids and project labels from running off the screen edge.
+CHAR_W = 6
+
+
+def fit_size(text, box_w, max_size=4, min_size=1):
+    n = max(len(text), 1)
+    for s in range(max_size, min_size - 1, -1):
+        if n * CHAR_W * s <= box_w:
+            return s
+    return min_size
+
+
+def ellipsize(text, box_w, size):
+    """Trim text (with a trailing ellipsis) so it fits box_w at the given size."""
+    max_chars = max(box_w // (CHAR_W * size), 1)
+    if len(text) <= max_chars:
+        return text
+    if max_chars <= 1:
+        return text[:max_chars]
+    return text[: max_chars - 1] + "…"
+
+
 ACCENT = "#d4845a"
 CREAM = "#e8dcc8"
 BLUE = "#7eb8da"
@@ -291,11 +316,13 @@ GREEN = "#9bad67"
 
 def card_archetype(p):
     span = p["span"]
+    arch = p["archetype"]
+    arch_size = fit_size(arch, 220, max_size=3)
     return {
         "play_sound": 20,
         "items": [
             {"type": "text", "text": "You are", "x": 0, "y": 6, "width": 220, "align": "center", "size": 1, "color": MUTE},
-            {"type": "text", "text": p["archetype"], "x": 0, "y": 24, "width": 220, "align": "center", "size": 3, "color": ACCENT},
+            {"type": "text", "text": arch, "x": 0, "y": 24, "width": 220, "align": "center", "size": arch_size, "color": ACCENT},
             {"type": "text", "text": f"{span['streak']}d streak", "x": 0, "y": 70, "width": 110, "align": "center", "size": 2, "color": GREEN},
             {"type": "text", "text": f"{span['active_days']} active days", "x": 110, "y": 73, "width": 110, "align": "center", "size": 1, "color": CREAM},
         ],
@@ -317,11 +344,12 @@ def card_rhythm(p):
 
 
 def card_model(p):
+    top = p["models"]["top"]
     return {
         "play_sound": 0,
         "items": [
             {"type": "text", "text": "Top Model", "x": 0, "y": 6, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": p["models"]["top"], "x": 0, "y": 34, "width": 220, "align": "center", "size": 3, "color": ACCENT},
+            {"type": "text", "text": top, "x": 0, "y": 34, "width": 220, "align": "center", "size": fit_size(top, 220, max_size=3), "color": ACCENT},
             {"type": "text", "text": f"{p['velocity']['tool_calls']} tool calls", "x": 0, "y": 82, "width": 220, "align": "center", "size": 1, "color": MUTE},
         ],
     }
@@ -330,11 +358,12 @@ def card_model(p):
 def card_tokens(p):
     t = p["tokens"]
     hit = int(t["cache_hit_pct"])
+    out = fmt_tokens(t["output"])
     return {
         "play_sound": 0,
         "items": [
             {"type": "text", "text": "Token Economy", "x": 0, "y": 4, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": fmt_tokens(t["output"]), "x": 18, "y": 28, "width": 110, "size": 4, "color": CREAM},
+            {"type": "text", "text": out, "x": 18, "y": 28, "width": 100, "size": fit_size(out, 96, max_size=4), "color": CREAM},
             {"type": "text", "text": "out", "x": 120, "y": 40, "width": 90, "align": "right", "size": 1, "color": MUTE},
             {"type": "text", "text": f"cache hit {hit}%", "x": 18, "y": 72, "width": 184, "size": 1, "color": GREEN},
             {"type": "progress", "x": 18, "y": 90, "width": 184, "height": 10, "radius": 5, "value": hit, "color": GREEN, "bg_color": "#3a3a3a"},
@@ -362,7 +391,9 @@ def card_projects(p):
     ]
     y = 30
     for name, count in list(p["top_projects"].items())[:3]:
-        items.append({"type": "text", "text": name, "x": 14, "y": y, "width": 150, "size": 2, "color": CREAM})
+        # name column spans x14..x140; trim so it never collides with the count
+        label = ellipsize(name, 126, 2)
+        items.append({"type": "text", "text": label, "x": 14, "y": y, "width": 126, "size": 2, "color": CREAM})
         items.append({"type": "text", "text": str(count), "x": 150, "y": y + 2, "width": 56, "align": "right", "size": 1, "color": MUTE})
         y += 26
     return {"play_sound": 0, "items": items[:6]}
@@ -376,7 +407,7 @@ def card_tools(p):
         "play_sound": 0,
         "items": [
             {"type": "text", "text": "Top Tool", "x": 0, "y": 6, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": top_name, "x": 0, "y": 32, "width": 220, "align": "center", "size": 3, "color": ACCENT},
+            {"type": "text", "text": top_name, "x": 0, "y": 32, "width": 220, "align": "center", "size": fit_size(top_name, 220, max_size=3), "color": ACCENT},
             {"type": "text", "text": f"{top_n} calls", "x": 0, "y": 68, "width": 110, "align": "center", "size": 1, "color": MUTE},
             {"type": "text", "text": f"{v['edits']} edits", "x": 110, "y": 68, "width": 110, "align": "center", "size": 1, "color": GREEN},
         ],
