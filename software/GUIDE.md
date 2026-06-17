@@ -73,6 +73,40 @@ You can also:
 
 ---
 
+## Waiting-on-you ping
+
+When Claude **needs your approval** to run something (a yes/no prompt) or your
+input has been **left idle**, the display pings you with a different buzzer
+(`triple_ping`) than the Task Done sound — so you'll notice even if you've
+wandered off to your phone. The card shows **`Approve?`** with the tool name, or
+**`Your turn`** when it's just waiting for you to type.
+
+## Turning notifications on/off
+
+You don't always want a sound. Just ask Claude in plain language and it updates
+the config for you (takes effect immediately, no restart):
+
+- "mute the display" / "im lặng đi" — keep the cards, silence the buzzer
+- "stop the task done notification" — no more *Task Done* card
+- "stop pinging me for approval" — no more *Approve?/Your turn* ping
+- "turn everything back on" — re-enable all
+
+Or edit `~/.config/autonomous-lcd.json` by hand (all default `true`):
+
+```json
+{
+  "sounds_enabled": true,
+  "task_done_enabled": true,
+  "notify_enabled": true
+}
+```
+
+- `sounds_enabled: false` → cards still show, but silently
+- `task_done_enabled: false` → no "Task Done" card (usage alerts still fire)
+- `notify_enabled: false` → no waiting-on-you ping
+
+---
+
 ## Builder insights
 
 Beyond live usage, the display can show your **builder profile** — derived from

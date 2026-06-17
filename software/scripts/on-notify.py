@@ -97,7 +97,7 @@ def parse_message(message):
     return "Heads up", msg
 
 
-def build_payload(message):
+def build_payload(message, sound=NOTIFY_SOUND):
     title, subtitle = parse_message(message)
     items = [
         {"type": "text", "text": title, "x": 0, "y": 26, "width": 220,
@@ -111,7 +111,7 @@ def build_payload(message):
     # keep the footer within the safe band (text below ~y=90 gets clipped)
     items.append({"type": "text", "text": "* claude code", "x": 0, "y": 84,
                   "width": 220, "align": "center", "size": 1, "color": MUTE})
-    return {"play_sound": NOTIFY_SOUND, "items": items[:6]}
+    return {"play_sound": sound, "items": items[:6]}
 
 
 def main():
@@ -132,6 +132,11 @@ def main():
     except Exception:
         sys.exit(0)
 
+    # User toggles (default on, preserving prior behaviour)
+    if not cfg.get("notify_enabled", True):
+        sys.exit(0)
+    sound = NOTIFY_SOUND if cfg.get("sounds_enabled", True) else 0
+
     devices = cfg.get("devices", [])
     if not devices:
         sys.exit(0)
@@ -139,7 +144,7 @@ def main():
     default_id = cfg.get("default_device_id", devices[0].get("device_id"))
     dev = next((d for d in devices if d["device_id"] == default_id), devices[0])
 
-    payload = build_payload(event.get("message", "Claude needs you"))
+    payload = build_payload(event.get("message", "Claude needs you"), sound)
     try:
         send_to_lcd(dev["last_known_ip"], dev["device_id"], payload)
         mark_ran()

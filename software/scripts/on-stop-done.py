@@ -110,9 +110,9 @@ def progress_color(pct):
     return "#6b8f4e"
 
 
-def build_usage_section1(pct_5h, reset_5h):
+def build_usage_section1(pct_5h, reset_5h, sound=20):
     return {
-        "play_sound": 20,
+        "play_sound": sound,
         "items": [
             {"type": "text", "text": "Usage", "x": 0, "y": 5, "width": 220, "align": "center", "size": 4, "color": "#d4845a"},
             {"type": "text", "text": f"{pct_5h}%", "x": 18, "y": 38, "width": 100, "size": 4, "color": progress_color(pct_5h)},
@@ -158,19 +158,22 @@ def main():
     device_id = dev["device_id"]
     threshold = cfg.get("usage_threshold", DEFAULT_USAGE_THRESHOLD)
 
-    # 1. Send Task Done
-    task_done_payload = {
-        "play_sound": 20,
-        "items": [
-            {"type": "text", "text": "Task Done", "x": 0, "y": 10, "width": 220, "align": "center", "size": 4, "color": "#6b8f4e"},
-            {"type": "text", "text": "* claude code", "x": 0, "y": 65, "width": 220, "align": "center", "size": 1, "color": "#9a9488"},
-        ],
-    }
+    # User toggles (default on, preserving prior behaviour)
+    sound = 20 if cfg.get("sounds_enabled", True) else 0
 
-    try:
-        send_to_lcd(ip, device_id, task_done_payload)
-    except Exception:
-        pass
+    # 1. Send Task Done (unless disabled)
+    if cfg.get("task_done_enabled", True):
+        task_done_payload = {
+            "play_sound": sound,
+            "items": [
+                {"type": "text", "text": "Task Done", "x": 0, "y": 10, "width": 220, "align": "center", "size": 4, "color": "#6b8f4e"},
+                {"type": "text", "text": "* claude code", "x": 0, "y": 65, "width": 220, "align": "center", "size": 1, "color": "#9a9488"},
+            ],
+        }
+        try:
+            send_to_lcd(ip, device_id, task_done_payload)
+        except Exception:
+            pass
 
     mark_ran()
 
@@ -196,7 +199,7 @@ def main():
     # 3. Send usage sections
     try:
         time.sleep(SECTION_DELAY)
-        send_to_lcd(ip, device_id, build_usage_section1(pct_5h, reset_5h))
+        send_to_lcd(ip, device_id, build_usage_section1(pct_5h, reset_5h, sound))
         time.sleep(SECTION_DELAY)
         send_to_lcd(ip, device_id, build_usage_section2(pct_7d, reset_7d))
     except Exception:

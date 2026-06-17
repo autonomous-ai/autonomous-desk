@@ -34,6 +34,23 @@ See the full [Setup Guide](GUIDE.md) for details.
 
 Or use natural language: "show my usage on display", "notify my display", "unpair my display"
 
+## Turning notifications on/off
+
+You don't always want the buzzer. Just tell Claude in plain language — it edits `~/.config/autonomous-lcd.json` for you (no restart needed):
+
+- "mute the display" / "im lặng đi" → keep the cards, silence the buzzer
+- "stop the task done notification" → no more "Task Done" card
+- "stop pinging me for approval" → no more "Approve?/Your turn" ping
+- "turn everything back on" → re-enable all
+
+The flags (all default `true`):
+
+| Key | Controls |
+|-----|----------|
+| `sounds_enabled` | Master buzzer. `false` = cards show silently |
+| `task_done_enabled` | The "Task Done" card after each response |
+| `notify_enabled` | The waiting-on-you ping (approval / idle) |
+
 ## Requirements
 
 - macOS

@@ -275,6 +275,33 @@ Let the user retune the auto-warning threshold in plain language — no need to 
 
 Note: `usage_threshold` only controls **when usage auto-displays** after a task. The progress-bar colors (green <60, orange 60–79, red ≥80) are independent and do not change with this value.
 
+### 5.2 Toggle notifications & sound (voice command)
+
+Let the user turn the automatic notifications and buzzer on/off in plain language — no JSON editing. All three keys default to **on/true** (so existing setups are unchanged) and live at the top level of `~/.config/autonomous-lcd.json`:
+
+| Key | Default | Controls |
+|-----|---------|----------|
+| `sounds_enabled` | `true` | Master buzzer switch. When `false`, cards still appear on screen but **silently** (`play_sound: 0`). |
+| `task_done_enabled` | `true` | The "Task Done" card after each response. When `false`, it is not sent (usage alerts still fire if over threshold). |
+| `notify_enabled` | `true` | The waiting-on-you ping (`Approve?` / `Your turn`). When `false`, no ping is sent. |
+
+**When to use & how to map the request:**
+
+- "mute the display" / "turn off the sounds" / "stop beeping" / "im lặng đi" → `sounds_enabled = false`
+- "turn sounds back on" / "unmute" → `sounds_enabled = true`
+- "stop the task done notification" / "don't ping me when done" / "tắt task done" → `task_done_enabled = false`
+- "stop pinging me for approval" / "turn off the waiting alert" / "tắt cái hỏi duyệt" → `notify_enabled = false`
+- "turn all notifications off" → set `task_done_enabled = false` **and** `notify_enabled = false`
+- "turn everything back on" → set all three to `true`
+
+**Procedure:**
+
+1. Read `~/.config/autonomous-lcd.json` (if missing → tell the user to pair a display first).
+2. Set only the relevant key(s), preserving all other keys (`devices`, `default_device_id`, `usage_threshold`, etc.). Write back as valid JSON with file permission `0600`.
+3. Confirm in plain language, e.g. **"Done — display stays silent now, cards still show."** or **"Task Done pings are off; I'll still warn you when usage is high."**
+
+The hooks read these flags on every run, so changes take effect immediately — no restart needed.
+
 ---
 
 ## 6. Usage Monitor (One-Shot)
