@@ -235,6 +235,15 @@ Handled automatically by the `Stop` hook (`scripts/on-stop-done.py`). Every time
 
 Rate-limited to once per 60 seconds. No action needed from Claude — the hook runs automatically.
 
+### Waiting-on-you ping (`Notification` hook)
+
+Handled automatically by the `Notification` hook (`scripts/on-notify.py`). Claude Code fires this when it needs your approval to run a tool (a yes/no prompt) or when the input has been left idle. The hook pings the display with sound **#1 (`triple_ping`)** — deliberately different from the Task Done cue (#20) — and shows a compact card:
+
+- Tool approval → **`Approve?`** + the tool name (MCP names are shortened, e.g. `mcp__…__authenticate` → `authenticate`)
+- Idle / waiting for input → **`Your turn`** + `waiting for you`
+
+Rate-limited to once per 8 seconds. Fails silently if no display is paired.
+
 ### Config: `usage_threshold`
 
 Set `usage_threshold` (integer, 0–100) in `~/.config/autonomous-lcd.json` to control when usage is shown after Task Done. Default: **80**.

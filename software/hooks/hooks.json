@@ -12,6 +12,18 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/on-notify.py",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
