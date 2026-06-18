@@ -40,7 +40,7 @@ Or use natural language: "show my usage on display", "notify my display", "unpai
 
 You don't always want the buzzer. Just tell Claude in plain language — it edits `~/.config/autonomous-lcd.json` for you (no restart needed):
 
-- "mute the display" / "im lặng đi" → keep the cards, silence the buzzer
+- "mute the display" → keep the cards, silence the buzzer
 - "stop the task done notification" → no more "Task Done" card
 - "stop pinging me for approval" → no more "Approve?/Your turn" ping
 - "turn everything back on" → re-enable all

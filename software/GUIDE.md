@@ -88,7 +88,7 @@ wandered off to your phone. The card shows **`Approve?`** with the tool name, or
 You don't always want a sound. Just ask Claude in plain language and it updates
 the config for you (takes effect immediately, no restart):
 
-- "mute the display" / "im lặng đi" — keep the cards, silence the buzzer
+- "mute the display" — keep the cards, silence the buzzer
 - "stop the task done notification" — no more *Task Done* card
 - "stop pinging me for approval" — no more *Approve?/Your turn* ping
 - "turn everything back on" — re-enable all
