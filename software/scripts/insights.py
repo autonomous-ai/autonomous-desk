@@ -37,6 +37,11 @@ CORRECTION_RE = re.compile(
     r"actually|instead|not that|go back|khong|sai|lam lai)\b",
     re.IGNORECASE,
 )
+# polite prompts — "thanks", "thank you", "thx", "ty", "cảm ơn"
+THANKS_RE = re.compile(
+    r"\b(thanks|thank you|thank u|thx|tysm|cz\b|cam on|cảm ơn)\b|\bty\b",
+    re.IGNORECASE,
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -82,12 +87,16 @@ def analyze():
         "tok_output": 0,
         "tok_cache_read": 0,
         "tok_cache_creation": 0,
+        "thanks": 0,
+        "short_prompts": 0,      # prompts under 10 words (concise-ness)
     }
     models = Counter()
     tools = Counter()
     by_project = Counter()
     hours = Counter()          # local hour-of-day -> prompt count
     active_days = set()        # local date strings
+    phrases = Counter()        # normalized short prompts -> count (go-to prompt)
+    crash_out = {"text": None, "letters": 0}  # loudest ALL-CAPS rant
     first_ts = None
     last_ts = None
 
@@ -122,8 +131,24 @@ def analyze():
                         by_project[label] += 1
                         words = content.split()
                         stats["prompt_words"] += len(words)
+                        if len(words) < 10:
+                            stats["short_prompts"] += 1
                         if CORRECTION_RE.match(content) and len(words) <= 12:
                             stats["corrections"] += 1
+                        if THANKS_RE.search(content):
+                            stats["thanks"] += 1
+                        # go-to prompt: repeated short phrases (2..6 words)
+                        if 2 <= len(words) <= 6:
+                            phrases[" ".join(content.lower().split())] += 1
+                        # crash out: a short, mostly-UPPERCASE rant (not pasted config/code)
+                        stripped = " ".join(content.split())
+                        if (3 <= len(words) <= 20 and len(stripped) <= 120
+                                and not any(ch in stripped for ch in "=/{};_<>|")):
+                            letters = [c for c in stripped if c.isalpha()]
+                            if len(letters) >= 8:
+                                upper = sum(1 for c in letters if c.isupper())
+                                if upper / len(letters) >= 0.7 and len(letters) > crash_out["letters"]:
+                                    crash_out = {"text": stripped, "letters": len(letters)}
                         if ts:
                             hours[ts.astimezone().hour] += 1
                             active_days.add(ts.astimezone().date().isoformat())
@@ -152,7 +177,8 @@ def analyze():
                             if name in EDIT_TOOLS:
                                 stats["edits"] += 1
 
-    return _derive(stats, models, tools, by_project, hours, active_days, first_ts, last_ts)
+    return _derive(stats, models, tools, by_project, hours, active_days,
+                   phrases, crash_out, first_ts, last_ts)
 
 
 # --------------------------------------------------------------------------- #
@@ -198,7 +224,8 @@ def _archetype(peak_hour, corr_ratio, avg_tools, avg_words):
     return "Steady Builder"
 
 
-def _derive(stats, models, tools, by_project, hours, active_days, first_ts, last_ts):
+def _derive(stats, models, tools, by_project, hours, active_days,
+            phrases, crash_out, first_ts, last_ts):
     prompts = max(stats["user_prompts"], 1)
     turns = max(stats["assistant_turns"], 1)
     peak_hour = hours.most_common(1)[0][0] if hours else None
@@ -207,8 +234,14 @@ def _derive(stats, models, tools, by_project, hours, active_days, first_ts, last
     corr_ratio = stats["corrections"] / prompts
     avg_tools = stats["tool_calls"] / turns
     avg_words = stats["prompt_words"] / prompts
+    short_pct = stats["short_prompts"] / prompts * 100
+
+    # go-to prompt: most repeated short phrase (must recur at least twice)
+    goto = next(((p, n) for p, n in phrases.most_common(20) if n >= 2), (None, 0))
 
     top_model = models.most_common(1)[0][0] if models else "n/a"
+    model_total = sum(models.values()) or 1
+    top_model_pct = (models.most_common(1)[0][1] / model_total * 100) if models else 0
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "span": {
@@ -227,6 +260,7 @@ def _derive(stats, models, tools, by_project, hours, active_days, first_ts, last
         "models": {
             "top": short_model(top_model),
             "top_raw": top_model,
+            "top_pct": round(top_model_pct, 1),
             "breakdown": {short_model(k): v for k, v in models.most_common(5)},
         },
         "tokens": {
@@ -239,6 +273,13 @@ def _derive(stats, models, tools, by_project, hours, active_days, first_ts, last
         "steering": {
             "avg_prompt_words": round(avg_words, 1),
             "correction_ratio": round(corr_ratio, 3),
+            "short_prompt_pct": round(short_pct, 1),
+        },
+        "habits": {
+            "goto_prompt": goto[0],
+            "goto_count": goto[1],
+            "thanks": stats["thanks"],
+            "crash_out": crash_out["text"],
         },
         "velocity": {
             "tool_calls": stats["tool_calls"],
@@ -282,11 +323,12 @@ def fmt_hour(h):
     return f"{hh}{suffix}"
 
 
-# The device font is ~6px wide per character at size 1, scaling linearly with
-# the size multiplier. The content viewport is 220px wide, so pick the largest
-# size (down to 1) whose rendered width fits the box — keeps long archetype
-# names, model ids and project labels from running off the screen edge.
-CHAR_W = 6
+# The device font is PROPORTIONAL and renders wider than a naive 6px/char — in
+# practice ~7px per character at size 1, scaling with the size multiplier. The
+# content viewport is 220px wide, so size text against a conservative budget and
+# keep big titles short (≤ ~8 chars) to avoid clipping at the screen edge.
+CHAR_W = 7
+NOTIFY_SOUND = 2  # lift_chime — gentle reveal cue on the first (archetype) card
 
 
 def fit_size(text, box_w, max_size=4, min_size=1):
@@ -312,109 +354,91 @@ CREAM = "#e8dcc8"
 BLUE = "#7eb8da"
 MUTE = "#9a9488"
 GREEN = "#9bad67"
+RED = "#c0392b"
 
 
-def card_archetype(p):
-    span = p["span"]
-    arch = p["archetype"]
-    arch_size = fit_size(arch, 220, max_size=3)
+def _card(title, content, sub, c_color=ACCENT, c_max=3, sound=0):
+    """Standard 3-line card: short title, auto-fit headline, small footnote.
+
+    Headline is sized against a conservative 185px budget; if even size 1 is too
+    wide it gets ellipsized. Sub line is trimmed to fit at size 1.
+    """
+    size = fit_size(content, 185, c_max)
     return {
-        "play_sound": 20,
+        "play_sound": sound,
         "items": [
-            {"type": "text", "text": "You are", "x": 0, "y": 6, "width": 220, "align": "center", "size": 1, "color": MUTE},
-            {"type": "text", "text": arch, "x": 0, "y": 24, "width": 220, "align": "center", "size": arch_size, "color": ACCENT},
-            {"type": "text", "text": f"{span['streak']}d streak", "x": 0, "y": 70, "width": 110, "align": "center", "size": 2, "color": GREEN},
-            {"type": "text", "text": f"{span['active_days']} active days", "x": 110, "y": 73, "width": 110, "align": "center", "size": 1, "color": CREAM},
+            {"type": "text", "text": ellipsize(title, 210, 2), "x": 0, "y": 8, "width": 220, "align": "center", "size": fit_size(title, 200, 2), "color": BLUE},
+            {"type": "text", "text": ellipsize(content, 200, size), "x": 0, "y": 36, "width": 220, "align": "center", "size": size, "color": c_color},
+            {"type": "text", "text": ellipsize(sub, 210, 1), "x": 0, "y": 80, "width": 220, "align": "center", "size": 1, "color": MUTE},
         ],
     }
 
 
-def card_rhythm(p):
-    act = p["activity"]
-    peak = fmt_hour(act["peak_hour"])
-    return {
-        "play_sound": 0,
-        "items": [
-            {"type": "text", "text": "Peak Hour", "x": 0, "y": 6, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": peak, "x": 0, "y": 30, "width": 220, "align": "center", "size": 4, "color": CREAM},
-            {"type": "text", "text": f"{act['sessions']} sessions", "x": 0, "y": 80, "width": 110, "align": "center", "size": 1, "color": MUTE},
-            {"type": "text", "text": f"{act['prompts']} prompts", "x": 110, "y": 80, "width": 110, "align": "center", "size": 1, "color": MUTE},
-        ],
-    }
+def _owl_label(h):
+    if h is None:
+        return "builder"
+    if h >= 22 or h <= 4:
+        return "Night owl"
+    if 5 <= h <= 8:
+        return "Early bird"
+    if 9 <= h <= 11:
+        return "Morning"
+    if 12 <= h <= 17:
+        return "Afternoon"
+    return "Evening"
 
 
-def card_model(p):
-    top = p["models"]["top"]
-    return {
-        "play_sound": 0,
-        "items": [
-            {"type": "text", "text": "Top Model", "x": 0, "y": 6, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": top, "x": 0, "y": 34, "width": 220, "align": "center", "size": fit_size(top, 220, max_size=3), "color": ACCENT},
-            {"type": "text", "text": f"{p['velocity']['tool_calls']} tool calls", "x": 0, "y": 82, "width": 220, "align": "center", "size": 1, "color": MUTE},
-        ],
-    }
+def build_cards(p):
+    """Return the rotation of card payloads, derived from the live profile.
 
+    Always shows the 5 stable cards; appends the go-to-prompt and crash-out
+    cards only when there's real data for them (no blank cards)."""
+    span, act, hab = p["span"], p["activity"], p.get("habits", {})
+    cards = []
 
-def card_tokens(p):
-    t = p["tokens"]
-    hit = int(t["cache_hit_pct"])
-    out = fmt_tokens(t["output"])
-    return {
-        "play_sound": 0,
-        "items": [
-            {"type": "text", "text": "Token Economy", "x": 0, "y": 4, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": out, "x": 18, "y": 28, "width": 100, "size": fit_size(out, 96, max_size=4), "color": CREAM},
-            {"type": "text", "text": "out", "x": 120, "y": 40, "width": 90, "align": "right", "size": 1, "color": MUTE},
-            {"type": "text", "text": f"cache hit {hit}%", "x": 18, "y": 72, "width": 184, "size": 1, "color": GREEN},
-            {"type": "progress", "x": 18, "y": 90, "width": 184, "height": 10, "radius": 5, "value": hit, "color": GREEN, "bg_color": "#3a3a3a"},
-        ],
-    }
+    # 1. Archetype (first card carries the reveal sound)
+    cards.append(_card(
+        "You are", p["archetype"],
+        f"{span['streak']}d streak · {span['active_days']} days",
+        ACCENT, 3, sound=NOTIFY_SOUND))
 
+    # 2. Peak hour
+    cards.append(_card(
+        "Peak hour", fmt_hour(act["peak_hour"]),
+        f"{_owl_label(act['peak_hour'])} · {act['sessions']} sess",
+        CREAM, 4))
 
-def card_style(p):
+    # 3. Top model
+    cards.append(_card(
+        "Top model", p["models"]["top"],
+        f"{int(p['models']['top_pct'])}% of turns", ACCENT, 3))
+
+    # 4. Prompt style (dynamic: detailed vs concise)
     s = p["steering"]
-    v = p["velocity"]
-    return {
-        "play_sound": 0,
-        "items": [
-            {"type": "text", "text": "Builder Style", "x": 0, "y": 4, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": f"{s['avg_prompt_words']} words/prompt", "x": 12, "y": 32, "width": 200, "size": 1, "color": CREAM},
-            {"type": "text", "text": f"{v['avg_tools_per_turn']} tools/turn", "x": 12, "y": 52, "width": 200, "size": 1, "color": CREAM},
-            {"type": "text", "text": f"{int(s['correction_ratio']*100)}% course-corrects", "x": 12, "y": 72, "width": 200, "size": 1, "color": ACCENT},
-        ],
-    }
+    if s["avg_prompt_words"] >= 40:
+        cards.append(_card("Your style", "Detailed",
+                           f"~{int(s['avg_prompt_words'])} words/prompt", CREAM, 3))
+    else:
+        cards.append(_card("Your style", "Concise",
+                           f"{int(s['short_prompt_pct'])}% under 10 words", CREAM, 3))
 
+    # 5. Manners (thanks count — always available, even if 0)
+    thanks = hab.get("thanks", 0)
+    polite_sub = "robots remember you" if thanks >= 10 else \
+                 ("a quiet nod" if thanks else "straight to business")
+    cards.append(_card("Manners", f"{thanks} thanks", polite_sub, GREEN, 3))
 
-def card_projects(p):
-    items = [
-        {"type": "text", "text": "Top Projects", "x": 0, "y": 4, "width": 220, "align": "center", "size": 2, "color": BLUE},
-    ]
-    y = 30
-    for name, count in list(p["top_projects"].items())[:3]:
-        # name column spans x14..x140; trim so it never collides with the count
-        label = ellipsize(name, 126, 2)
-        items.append({"type": "text", "text": label, "x": 14, "y": y, "width": 126, "size": 2, "color": CREAM})
-        items.append({"type": "text", "text": str(count), "x": 150, "y": y + 2, "width": 56, "align": "right", "size": 1, "color": MUTE})
-        y += 26
-    return {"play_sound": 0, "items": items[:6]}
+    # 6. Go-to prompt (only if a phrase recurs)
+    if hab.get("goto_prompt"):
+        cards.append(_card("Most used", f'"{hab["goto_prompt"]}"',
+                           f"{hab['goto_count']}× across sessions", ACCENT, 2))
 
+    # 7. Crash out (only if a loud ALL-CAPS rant exists)
+    if hab.get("crash_out"):
+        cards.append(_card("Crash out", hab["crash_out"],
+                           "caps lock engaged", RED, 1))
 
-def card_tools(p):
-    v = p["velocity"]
-    top = list(v["top_tools"].items())
-    top_name, top_n = (top[0] if top else ("n/a", 0))
-    return {
-        "play_sound": 0,
-        "items": [
-            {"type": "text", "text": "Top Tool", "x": 0, "y": 6, "width": 220, "align": "center", "size": 2, "color": BLUE},
-            {"type": "text", "text": top_name, "x": 0, "y": 32, "width": 220, "align": "center", "size": fit_size(top_name, 220, max_size=3), "color": ACCENT},
-            {"type": "text", "text": f"{top_n} calls", "x": 0, "y": 68, "width": 110, "align": "center", "size": 1, "color": MUTE},
-            {"type": "text", "text": f"{v['edits']} edits", "x": 110, "y": 68, "width": 110, "align": "center", "size": 1, "color": GREEN},
-        ],
-    }
-
-
-CARDS = [card_archetype, card_rhythm, card_model, card_tokens, card_style, card_projects, card_tools]
+    return cards
 
 
 # --------------------------------------------------------------------------- #
@@ -449,10 +473,12 @@ def display(profile, once=False):
         print("No paired display. Run 'pair my display' first.", file=sys.stderr)
         return 1
     ip, device_id = dev
-    cards = CARDS[:1] if once else CARDS
-    for i, builder in enumerate(cards):
+    cards = build_cards(profile)
+    if once:
+        cards = cards[:1]
+    for i, payload in enumerate(cards):
         try:
-            send_to_lcd(ip, device_id, builder(profile))
+            send_to_lcd(ip, device_id, payload)
         except Exception as e:
             print(f"send failed: {e}", file=sys.stderr)
             return 1
@@ -467,9 +493,11 @@ def display_card(profile, index):
     if not dev:
         return 1
     ip, device_id = dev
-    builder = CARDS[index % len(CARDS)]
+    cards = build_cards(profile)
+    if not cards:
+        return 1
     try:
-        send_to_lcd(ip, device_id, builder(profile))
+        send_to_lcd(ip, device_id, cards[index % len(cards)])
     except Exception as e:
         print(f"send failed: {e}", file=sys.stderr)
         return 1
@@ -514,6 +542,12 @@ def render_text(p):
         f"{p['velocity']['avg_tools_per_turn']} tools/turn",
         f"  Projects  : " + ", ".join(p["top_projects"].keys()),
     ]
+    hab = p.get("habits", {})
+    if hab.get("goto_prompt"):
+        lines.append(f"  Go-to     : \"{hab['goto_prompt']}\" ({hab['goto_count']}x)")
+    lines.append(f"  Manners   : {hab.get('thanks', 0)} thanks")
+    if hab.get("crash_out"):
+        lines.append(f"  Crash out : {hab['crash_out']}")
     return "Builder Profile (local)\n" + "\n".join(lines)
 
 

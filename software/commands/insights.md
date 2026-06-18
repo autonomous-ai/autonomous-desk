@@ -13,16 +13,18 @@ Run the bundled analyzer:
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/insights.py --display
 ```
 
-This reads `~/.claude/projects/**/*.jsonl`, derives the profile (archetype,
-peak coding hour, top model, token economy + cache-hit rate, steering style,
-velocity), and rotates five cards on the display:
+This reads `~/.claude/projects/**/*.jsonl`, derives the profile, and rotates up
+to **7 cards** on the display:
 
 1. **Archetype** — headline label + day streak
-2. **Rhythm** — peak coding hour, session/prompt counts
-3. **Top model** — most-used model + total tool calls
-4. **Token economy** — output tokens + cache-hit %
-5. **Builder style** — words/prompt, tools/turn, course-correct rate
+2. **Peak hour** — when you code most + session count
+3. **Top model** — most-used model + its share of turns
+4. **Your style** — detailed vs concise prompting
+5. **Manners** — how often you thank your agents
+6. **Most used** — your go-to prompt *(only if a phrase recurs)*
+7. **Crash out** — your loudest ALL-CAPS moment *(only if one exists)*
 
-Then report the highlights back to the user in plain language (archetype, peak
-hour, streak, top model). Use `--json` instead of `--display` if the user just
-wants the numbers, or `--once` to send only the headline archetype card.
+Cards 6–7 appear only when there's real data for them, so a profile may rotate
+5–7 cards. Then report the highlights back to the user in plain language
+(archetype, peak hour, streak, top model, go-to prompt). Use `--json` instead of
+`--display` for the raw numbers, or `--once` to send only the headline card.
