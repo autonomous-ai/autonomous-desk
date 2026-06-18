@@ -1,5 +1,5 @@
 {
   "name": "vibe-desk-display",
-  "description": "Turn your VibeDesk into a live Claude Code usage monitor. Auto-updates every time Claude responds after one-time pairing.",
+  "description": "Turn your Thinking Desk into a live Claude Code usage monitor. Auto-updates every time Claude responds after one-time pairing.",
   "version": "1.4.0"
 }

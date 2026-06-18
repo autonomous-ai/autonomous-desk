@@ -4,7 +4,7 @@ allowed-tools: Bash(*)
 ---
 
 Compute the user's **local builder profile** from their Claude Code session
-transcripts and show it on the paired VibeDesk display. Everything runs
+transcripts and show it on the paired Thinking Desk display. Everything runs
 on-device — no transcript content leaves the machine.
 
 Run the bundled analyzer:

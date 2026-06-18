@@ -7,7 +7,7 @@ economy, steering style, parallelization and velocity — entirely on-device.
 
 Inspired by Paxel (paxel.ycombinator.com), but privacy-first: nothing leaves the
 machine. Use `--json` to dump the computed profile, or `--display` to rotate the
-insight cards onto a paired VibeDesk display.
+insight cards onto a paired Thinking Desk display.
 
 Stdlib only — no pip install.
 """

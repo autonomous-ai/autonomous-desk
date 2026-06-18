@@ -1,6 +1,6 @@
-# Autonomous VibeDesk Display for Claude Code
+# Autonomous Thinking Desk Display for Claude Code
 
-Turn your [VibeDesk](https://www.autonomous.ai/standing-desks/autonomous-desk-5-ai) into a live Claude Code companion. Task-done notifications and usage data appear on your desk display — no dashboard, no browser, just a glance.
+Turn your [Thinking Desk](https://www.autonomous.ai/standing-desks/autonomous-desk-5-ai) into a live Claude Code companion. Task-done notifications and usage data appear on your desk display — no dashboard, no browser, just a glance.
 
 https://github.com/user-attachments/assets/c82094b5-4b77-46ee-b667-aca28d9a6bfc
 
@@ -55,7 +55,7 @@ The flags (all default `true`):
 
 - macOS
 - Python 3
-- A VibeDesk device on the same WiFi
+- A Thinking Desk device on the same WiFi
 - Claude Code with OAuth login
 
 ## Update / Uninstall

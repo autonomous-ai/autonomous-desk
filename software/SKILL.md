@@ -1,7 +1,7 @@
 ---
 name: vibe-desk-display
 description: >
-  Interact with the user's desk display device (VibeDesk) over LAN.
+  Interact with the user's desk display device (Thinking Desk) over LAN.
   Supports pairing, sending notifications with plain text,
   rich layout (positioned text, shapes, progress bars), and buzzer sounds.
   Sends task-done notification + usage data when Claude completes a task.
@@ -13,9 +13,9 @@ description: >
 allowed-tools: Bash(*)
 ---
 
-# Vibe Desk Display Skill
+# Thinking Desk Display Skill
 
-Discover, pair, and send notifications to a VibeDesk display on the local network.
+Discover, pair, and send notifications to a Thinking Desk display on the local network.
 After pairing, Claude proactively sends a task-done notification + usage data when completing a task.
 
 ## Config

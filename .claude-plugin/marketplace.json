@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "vibe-desk-display",
-      "description": "Turn your VibeDesk into a live Claude Code usage monitor",
+      "description": "Turn your Thinking Desk into a live Claude Code usage monitor",
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/autonomous-ai/autonomous-desk",
