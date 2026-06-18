@@ -433,8 +433,8 @@ Progress bar color: green `#6b8f4e` (<60%), orange `#d4845a` (60-79%), red `#c03
 ## 6b. Builder Insights (local transcript analysis)
 
 A privacy-first, on-device builder profile derived from the user's local
-Claude Code session transcripts (`~/.claude/projects/**/*.jsonl`). Inspired by
-Paxel, but nothing leaves the machine — no network, no upload.
+Claude Code session transcripts (`~/.claude/projects/**/*.jsonl`). Everything is
+computed on the machine — no network, no upload.
 
 **When to use:** "show my builder profile", "what kind of coder am I",
 "/vibe-desk-display:insights", "rotate my insights on the display".

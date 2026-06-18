@@ -5,9 +5,9 @@ Reads your local Claude Code session transcripts (~/.claude/projects/**/*.jsonl)
 and derives a "builder profile" — peak coding hour, archetype, top model, token
 economy, steering style, parallelization and velocity — entirely on-device.
 
-Inspired by Paxel (paxel.ycombinator.com), but privacy-first: nothing leaves the
-machine. Use `--json` to dump the computed profile, or `--display` to rotate the
-insight cards onto a paired Thinking Desk display.
+Privacy-first: everything is computed on-device and nothing leaves the machine.
+Use `--json` to dump the computed profile, or `--display` to rotate the insight
+cards onto a paired Thinking Desk display.
 
 Stdlib only — no pip install.
 """
@@ -210,7 +210,7 @@ def _streak(active_days):
 
 
 def _archetype(peak_hour, corr_ratio, avg_tools, avg_words):
-    """Single headline label, Paxel-style."""
+    """Single headline label summarising the builder."""
     if peak_hour is not None and (peak_hour >= 22 or peak_hour <= 4):
         return "Night Owl"
     if peak_hour is not None and 5 <= peak_hour <= 8:

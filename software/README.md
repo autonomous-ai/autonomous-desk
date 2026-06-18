@@ -21,7 +21,7 @@ See the full [Setup Guide](GUIDE.md) for details.
 
 - **Task done + usage display** — when Claude completes a task, shows a "Task Done" notification followed by 5-hour and 7-day usage
 - **Waiting-on-you ping** — when Claude needs your approval (yes/no) or your input is idle, the display pings with a distinct buzzer (triple_ping) so you don't miss it while away from the keyboard
-- **Builder insights** — analyze your local Claude Code sessions on-device and rotate a builder profile (archetype, peak hour, top model, token economy, style) across the display. Inspired by [Paxel](https://paxel.ycombinator.com/), but nothing leaves your machine
+- **Builder insights** — analyze your local Claude Code sessions on-device and rotate a builder profile (archetype, peak hour, top model, go-to prompt, style) across the display. Everything is computed locally — nothing leaves your machine
 - **Notifications** — send custom messages to the screen ("notify my display when done")
 - **OTP pairing** — no sticker reading, just enter the code shown on screen
 - **Zero dependencies** — Python 3 stdlib only, no pip install needed
