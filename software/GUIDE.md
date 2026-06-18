@@ -43,6 +43,8 @@ pair my display
 
 That's it — your device is paired.
 
+> **Update your firmware.** After connecting your desk, open the Thinking Desk mobile app and update the firmware to the latest version — this ensures the display renders notifications correctly.
+
 ---
 
 ## What happens next

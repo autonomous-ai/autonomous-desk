@@ -13,6 +13,8 @@ claude plugins install vibe-desk-display
 
 Restart Claude Code, then type `pair my display` and follow the on-screen instructions.
 
+> **After connecting your desk, update the firmware to the latest version** (via the Thinking Desk mobile app) to make sure the display works correctly.
+
 See the full [Setup Guide](GUIDE.md) for details.
 
 ## Features
