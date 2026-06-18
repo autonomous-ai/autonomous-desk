@@ -2,7 +2,7 @@
 
 Turn your [Thinking Desk](https://www.autonomous.ai/standing-desks/autonomous-desk-5-ai) into a live Claude Code companion. Task-done notifications and usage data appear on your desk display — no dashboard, no browser, just a glance.
 
-https://cdn.autonomous.ai/production/ecm/260601/thinking-desk-thumb.mp4
+https://github.com/user-attachments/assets/c036cb38-f9d6-42e8-8b66-5a09e0e77de2
 
 ## Quick Start
 
