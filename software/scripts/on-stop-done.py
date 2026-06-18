@@ -166,8 +166,8 @@ def main():
         task_done_payload = {
             "play_sound": sound,
             "items": [
-                {"type": "text", "text": "Task Done", "x": 0, "y": 10, "width": 220, "align": "center", "size": 4, "color": "#6b8f4e"},
-                {"type": "text", "text": "* claude code", "x": 0, "y": 65, "width": 220, "align": "center", "size": 1, "color": "#9a9488"},
+                {"type": "text", "text": "Task Done", "x": 0, "y": 26, "width": 220, "align": "center", "size": 3, "color": "#6b8f4e"},
+                {"type": "text", "text": "* claude code", "x": 0, "y": 66, "width": 220, "align": "center", "size": 1, "color": "#9a9488"},
             ],
         }
         try:

@@ -188,6 +188,8 @@ When `items[]` has at least one valid item, rich layout is used and `text` is ig
 - Item text max **95** chars
 - `value`: 0..100, `radius`: 0..50, `stroke_width`: 1..32
 
+**Text width budget (avoid clipping):** each character is ~`6 × size` px wide, so a string only fits if `len(text) × 6 × size ≤ box width`. At the **220px** viewport that means a `size 4` title fits ~9 chars, `size 3` ~12, `size 2` ~18. Keep big titles short, or drop a size — e.g. `"Task Done"` (9 chars) is already at the edge at size 4, so render it at size 3. Vertically, keep text above **y≈90**; lower text gets clipped at the bottom.
+
 ### 4.3 Send
 
 ```python
