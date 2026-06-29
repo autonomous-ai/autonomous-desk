@@ -52,6 +52,7 @@ The flags (all default `true`):
 | `sounds_enabled` | Master buzzer. `false` = cards show silently |
 | `task_done_enabled` | The "Task Done" card after each response |
 | `notify_enabled` | The waiting-on-you ping (approval / idle) |
+| `update_check_enabled` | The silent "Update available" card (≤ once/day) |
 
 ## Requirements
 

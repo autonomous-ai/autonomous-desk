@@ -18,6 +18,14 @@ DEFAULT_USAGE_THRESHOLD = 80
 LCD_PORT = 3000
 SECTION_DELAY = 5
 
+# Update-available card: GitHub is polled at most once per day; the card is
+# shown at most once per day and disappears once you're on the latest version.
+UPDATE_STATE_PATH = os.path.expanduser("~/.config/autonomous-lcd-update.json")
+UPDATE_CHECK_INTERVAL = 24 * 3600
+PLUGIN_JSON_URL = (
+    "https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/software/plugin.json"
+)
+
 
 def should_run():
     try:
@@ -136,6 +144,111 @@ def build_usage_section2(pct_7d, reset_7d):
     }
 
 
+def _load_update_state():
+    try:
+        with open(UPDATE_STATE_PATH) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_update_state(state):
+    try:
+        with open(UPDATE_STATE_PATH, "w") as f:
+            json.dump(state, f)
+    except Exception:
+        pass
+
+
+def local_version():
+    """Version of the plugin this script ships with (../plugin.json)."""
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "..", "plugin.json")) as f:
+            return json.load(f).get("version")
+    except Exception:
+        return None
+
+
+def _fetch_latest_version():
+    try:
+        req = urllib.request.Request(
+            PLUGIN_JSON_URL, headers={"User-Agent": "vibe-desk-display"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            return json.loads(resp.read()).get("version")
+    except Exception:
+        return None
+
+
+def _parse_version(v):
+    try:
+        return tuple(int(x) for x in str(v).split("."))
+    except Exception:
+        return None
+
+
+def latest_if_newer():
+    """Return the latest version string if it's newer than the local one, else
+    None. Hits GitHub at most once per UPDATE_CHECK_INTERVAL; result cached."""
+    local = local_version()
+    if not local:
+        return None
+    state = _load_update_state()
+    now = time.time()
+    latest = state.get("latest")
+    if not latest or (now - state.get("checked_at", 0)) >= UPDATE_CHECK_INTERVAL:
+        fetched = _fetch_latest_version()
+        if fetched:
+            latest = fetched
+            state["latest"] = latest
+        state["checked_at"] = now
+        _save_update_state(state)
+    lv, cv = _parse_version(latest), _parse_version(local)
+    if lv and cv and lv > cv:
+        return latest
+    return None
+
+
+def _should_show_update(latest):
+    """Show the card at most once per day per pending version."""
+    state = _load_update_state()
+    today = int(time.time() // 86400)
+    return not (state.get("shown_day") == today and state.get("shown_version") == latest)
+
+
+def _mark_update_shown(latest):
+    state = _load_update_state()
+    state["shown_day"] = int(time.time() // 86400)
+    state["shown_version"] = latest
+    _save_update_state(state)
+
+
+def build_update_card(local, latest):
+    # Silent on purpose — an update notice shouldn't buzz like a real alert.
+    return {
+        "play_sound": 0,
+        "items": [
+            {"type": "text", "text": "UPDATE AVAILABLE", "x": 0, "y": 22, "width": 220, "align": "center", "size": 2, "color": "#d4845a"},
+            {"type": "text", "text": f"v{local} -> v{latest}", "x": 0, "y": 48, "width": 220, "align": "center", "size": 1, "color": "#e8dcc8"},
+            {"type": "text", "text": "run /plugin update", "x": 0, "y": 70, "width": 220, "align": "center", "size": 1, "color": "#9a9488"},
+        ],
+    }
+
+
+def maybe_show_update(ip, device_id):
+    """After Task Done, surface an update card if one is pending (≤1/day)."""
+    try:
+        latest = latest_if_newer()
+        if not latest or not _should_show_update(latest):
+            return
+        time.sleep(2)
+        send_to_lcd(ip, device_id, build_update_card(local_version(), latest))
+        _mark_update_shown(latest)
+    except Exception:
+        pass
+
+
 def main():
     json.load(sys.stdin)
 
@@ -176,6 +289,11 @@ def main():
             pass
 
     mark_ran()
+
+    # 1b. Show an update-available card if a newer version exists (silent,
+    # at most once/day). Runs before the usage early-exits below.
+    if cfg.get("update_check_enabled", True):
+        maybe_show_update(ip, device_id)
 
     # 2. Check usage against threshold
     token = get_token()

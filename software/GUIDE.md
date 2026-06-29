@@ -99,13 +99,20 @@ Or edit `~/.config/autonomous-lcd.json` by hand (all default `true`):
 {
   "sounds_enabled": true,
   "task_done_enabled": true,
-  "notify_enabled": true
+  "notify_enabled": true,
+  "update_check_enabled": true
 }
 ```
 
 - `sounds_enabled: false` → cards still show, but silently
 - `task_done_enabled: false` → no "Task Done" card (usage alerts still fire)
 - `notify_enabled: false` → no waiting-on-you ping
+- `update_check_enabled: false` → no "Update available" card
+
+> **Update available card.** When a newer plugin version is published, the
+> display shows a silent **`UPDATE AVAILABLE`** card after a task completes —
+> at most once a day, and it disappears once you update. It checks GitHub at
+> most once every 24 hours.
 
 ---
 
