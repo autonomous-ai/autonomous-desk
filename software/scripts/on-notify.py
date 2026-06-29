@@ -12,7 +12,6 @@ Rate-limited to once per 8s so a burst of prompts doesn't machine-gun the buzzer
 
 import json
 import os
-import re
 import sys
 import time
 import urllib.request
@@ -55,9 +54,6 @@ def send_to_lcd(ip, device_id, payload):
     urllib.request.urlopen(req, timeout=3)
 
 
-PERMISSION_RE = re.compile(r"permission to use (.+?)[.\s]*$", re.IGNORECASE)
-
-
 def ellipsize(text, box_w, size):
     """Trim text (+ trailing ellipsis) so it fits box_w at the given size."""
     max_chars = max(box_w // (CHAR_W * size), 1)
@@ -69,32 +65,14 @@ def ellipsize(text, box_w, size):
     return text[: max_chars - 1] + "…"
 
 
-def pretty_tool(name):
-    """Shorten tool names for the tiny display.
-
-    MCP tools arrive as 'mcp__<server>__<tool>' which is far too long — keep
-    just the tool segment with underscores spaced out (e.g.
-    'mcp__claude_ai_Google_Drive__authenticate' -> 'authenticate').
-    """
-    name = name.strip()
-    if name.startswith("mcp__"):
-        name = name.split("__")[-1] or name
-    return name.replace("_", " ").strip()
-
-
 def parse_message(message):
-    """Return (title, subtitle) — a clean headline + one short line."""
-    msg = (message or "").strip()
-    low = msg.lower()
-    m = PERMISSION_RE.search(msg)
-    if m:
-        # "Claude needs your permission to use Bash" -> ("Approve?", "Bash")
-        return "Approve?", pretty_tool(m.group(1))
-    if "permission" in low or "approve" in low or "allow" in low:
-        return "Approve?", "needs your ok"
-    if "waiting" in low or "idle" in low or "input" in low:
-        return "Your turn", "waiting for you"
-    return "Heads up", msg
+    """Return (title, subtitle) — a clean headline + one short line.
+
+    Whatever the Notification event is (tool approval or idle input), it always
+    means the same thing to the user: go look at Claude. So we show one clear,
+    consistent card instead of guessing a per-case headline.
+    """
+    return "CLAUDE NEEDS YOU", "Check your terminal"
 
 
 def build_payload(message, sound=NOTIFY_SOUND):
