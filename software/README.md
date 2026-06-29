@@ -42,7 +42,7 @@ You don't always want the buzzer. Just tell Claude in plain language — it edit
 
 - "mute the display" → keep the cards, silence the buzzer
 - "stop the task done notification" → no more "Task Done" card
-- "stop pinging me for approval" → no more "Approve?/Your turn" ping
+- "stop pinging me for approval" → no more "Claude needs you" ping
 - "turn everything back on" → re-enable all
 
 The flags (all default `true`):
@@ -60,9 +60,29 @@ The flags (all default `true`):
 - A Thinking Desk device on the same WiFi
 - Claude Code with OAuth login
 
-## Update / Uninstall
+## Update
+
+The plugin does **not** update itself when you restart Claude Code. You get new versions one of two ways:
+
+**Auto-update (recommended)** — turn it on once, then every new version installs on the next launch:
+
+```
+/plugin
+→ Marketplaces → autonomous-desk → Enable auto-update
+```
+
+**Manual** — pull the latest right now:
 
 ```bash
-claude plugins update vibe-desk-display@vibe-desk-display   # pull latest
-claude plugins uninstall vibe-desk-display                  # remove plugin
+claude plugins update vibe-desk-display@autonomous-desk
+```
+
+Restart Claude Code after updating.
+
+> Note: the marketplace is named `autonomous-desk`, so the reference is `vibe-desk-display@autonomous-desk` (plugin@marketplace).
+
+## Uninstall
+
+```bash
+claude plugins uninstall vibe-desk-display
 ```

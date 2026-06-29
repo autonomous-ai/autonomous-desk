@@ -80,8 +80,8 @@ You can also:
 When Claude **needs your approval** to run something (a yes/no prompt) or your
 input has been **left idle**, the display pings you with a different buzzer
 (`triple_ping`) than the Task Done sound — so you'll notice even if you've
-wandered off to your phone. The card shows **`Approve?`** with the tool name, or
-**`Your turn`** when it's just waiting for you to type.
+wandered off to your phone. The card shows **`CLAUDE NEEDS YOU`** with
+**`Check your terminal`**, so you know to go back and respond.
 
 ## Turning notifications on/off
 
@@ -90,7 +90,7 @@ the config for you (takes effect immediately, no restart):
 
 - "mute the display" — keep the cards, silence the buzzer
 - "stop the task done notification" — no more *Task Done* card
-- "stop pinging me for approval" — no more *Approve?/Your turn* ping
+- "stop pinging me for approval" — no more *Claude needs you* ping
 - "turn everything back on" — re-enable all
 
 Or edit `~/.config/autonomous-lcd.json` by hand (all default `true`):
@@ -139,11 +139,31 @@ keep the ambient display usage-only, set `"show_insights": false` in
 
 ## Update the plugin
 
+Restarting Claude Code does **not** update the plugin on its own. There are two ways to get new versions.
+
+### Option A — Auto-update (set once, recommended)
+
+Turn it on and every new version installs automatically the next time you launch Claude Code:
+
+```
+/plugin
+```
+
+Go to **Marketplaces → autonomous-desk → Enable auto-update**.
+
+> Auto-update is off by default for community marketplaces like this one, so you have to enable it once. After that you never need to update by hand.
+
+### Option B — Update manually
+
+Pull the latest version right now:
+
 ```bash
-claude plugins update vibe-desk-display@vibe-desk-display
+claude plugins update vibe-desk-display@autonomous-desk
 ```
 
 Restart Claude Code after updating.
+
+> The reference is `vibe-desk-display@autonomous-desk` — that's `plugin-name@marketplace-name`. To force a marketplace refresh first, run `/plugin marketplace update autonomous-desk`, then update.
 
 ---
 
