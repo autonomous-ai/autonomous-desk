@@ -22,10 +22,9 @@ COOLDOWN_SECONDS = 8
 LCD_PORT = 3000
 NOTIFY_SOUND = 1  # triple_ping — deliberately different from Task Done (#20)
 
-ACCENT = "#d4845a"
-CREAM = "#e8dcc8"
-MUTE = "#9a9488"
-CHAR_W = 6  # device font: ~6px per char at size 1, scaling with size
+ACCENT = "#d4845a"  # orange — "CLAUDE"
+BLUE = "#7eb8da"    # sky blue — "NEEDS YOU"
+MUTE = "#9a9488"    # muted — hint line
 
 
 def should_run():
@@ -54,60 +53,18 @@ def send_to_lcd(ip, device_id, payload):
     urllib.request.urlopen(req, timeout=3)
 
 
-def ellipsize(text, box_w, size):
-    """Trim text (+ trailing ellipsis) so it fits box_w at the given size."""
-    max_chars = max(box_w // (CHAR_W * size), 1)
-    text = text.strip()
-    if len(text) <= max_chars:
-        return text
-    if max_chars <= 1:
-        return text[:max_chars]
-    return text[: max_chars - 1] + "…"
-
-
-def wrap_lines(text, box_w, size):
-    """Greedily wrap text into lines that each fit box_w at the given size."""
-    max_chars = max(box_w // (CHAR_W * size), 1)
-    lines, cur = [], ""
-    for word in text.split():
-        cand = (cur + " " + word).strip()
-        if len(cand) <= max_chars:
-            cur = cand
-        else:
-            if cur:
-                lines.append(cur)
-            cur = word
-    if cur:
-        lines.append(cur)
-    return lines or [text]
-
-
-def parse_message(message):
-    """Return (title, subtitle) — a clean headline + one short line.
-
-    Whatever the Notification event is (tool approval or idle input), it always
-    means the same thing to the user: go look at Claude. So we show one clear,
-    consistent card instead of guessing a per-case headline.
-    """
-    return "CLAUDE NEEDS YOU", "Check your terminal"
-
-
 def build_payload(message, sound=NOTIFY_SOUND):
-    title, subtitle = parse_message(message)
-    # Big, bold title wrapped to size 3 (drops the old "* claude code" footer
-    # so the headline gets the whole screen).
-    title_lines = wrap_lines(title, 216, 3)
-    y = 8 if len(title_lines) > 1 else 20
-    items = []
-    for line in title_lines:
-        items.append({"type": "text", "text": line, "x": 0, "y": y, "width": 220,
-                      "align": "center", "size": 3, "color": ACCENT})
-        y += 28
-    if subtitle:
-        items.append({"type": "text", "text": ellipsize(subtitle, 216, 1),
-                      "x": 0, "y": max(y + 6, 70), "width": 220, "align": "center",
-                      "size": 1, "color": CREAM})
-    return {"play_sound": sound, "items": items[:6]}
+    """One consistent card for every Notification event: a big two-line
+    headline (CLAUDE in orange, NEEDS YOU in blue) over a muted hint. No
+    footer — the headline gets the whole screen."""
+    return {
+        "play_sound": sound,
+        "items": [
+            {"type": "text", "text": "CLAUDE", "x": 0, "y": 8, "width": 220, "align": "center", "size": 3, "color": ACCENT},
+            {"type": "text", "text": "NEEDS YOU", "x": 0, "y": 36, "width": 220, "align": "center", "size": 3, "color": BLUE},
+            {"type": "text", "text": "Check your terminal", "x": 0, "y": 72, "width": 220, "align": "center", "size": 1, "color": MUTE},
+        ],
+    }
 
 
 def main():
