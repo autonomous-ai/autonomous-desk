@@ -77,11 +77,15 @@ You can also:
 
 ## Waiting-on-you ping
 
-When Claude **needs your approval** to run something (a yes/no prompt) or your
-input has been **left idle**, the display pings you with a different buzzer
-(`triple_ping`) than the Task Done sound — so you'll notice even if you've
-wandered off to your phone. The card shows **`CLAUDE NEEDS YOU`** with
-**`Check your terminal`**, so you know to go back and respond.
+When Claude **needs your approval** to run something (a yes/no prompt, or an
+MCP form), the display pings you with a different buzzer (`triple_ping`) than
+the Task Done sound — so you'll notice even if you've wandered off to your
+phone. The card shows **`CLAUDE NEEDS YOU`** with **`Check your terminal`**, so
+you know to go back and respond.
+
+It deliberately stays quiet for Claude Code's plain "idle, waiting for your next
+prompt" notice — that isn't asking you for anything, so it shouldn't light up
+the display.
 
 ## Turning notifications on/off
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Hook: ping the LCD when Claude is waiting on the user.
+"""Hook: ping the LCD when Claude needs you to act.
 
-Fires on Claude Code's `Notification` event — i.e. when Claude needs approval
-to run a tool (a yes/no prompt) or the input has been left idle. Uses a
-distinct buzzer (triple_ping, #1) so it never sounds like the Task Done cue
-(claude_style, #20). Handy when you've wandered off to your phone and forgot
-to hit enter.
+Fires on Claude Code's `Notification` event, but only for the cases that
+actually need a decision — a tool-approval prompt or an MCP form. The plain
+"idle, waiting for your next prompt" notice is ignored so the display doesn't
+flash a misleading "CLAUDE NEEDS YOU" when nothing is being asked.
 
-Rate-limited to once per 8s so a burst of prompts doesn't machine-gun the buzzer.
+Uses a distinct buzzer (triple_ping, #1) so it never sounds like the Task Done
+cue (claude_style, #20). Rate-limited to once per 8s.
 """
 
 import json
@@ -27,6 +27,24 @@ NOTIFY_SOUND = 1  # triple_ping — deliberately different from Task Done (#20)
 ACCENT = "#d4845a"  # orange — "CLAUDE"
 BLUE = "#7eb8da"    # sky blue — "NEEDS YOU"
 MUTE = "#9a9488"    # muted — hint line
+
+# Notification types that need no action from the user — never light up the
+# display for these (idle waiting, auth success, MCP elicitation acks).
+SKIP_NOTIFICATION_TYPES = {
+    "idle_prompt", "auth_success",
+    "elicitation_complete", "elicitation_response",
+}
+
+
+def is_actionable(event):
+    """True if this Notification needs the user to do something (approve a tool,
+    fill an MCP form). Uses the structured `notification_type` when present and
+    falls back to the message text on older Claude Code builds."""
+    ntype = (event.get("notification_type") or "").strip()
+    if ntype:
+        return ntype not in SKIP_NOTIFICATION_TYPES
+    low = (event.get("message") or "").lower()
+    return not ("waiting for your" in low or "idle" in low)
 
 
 def should_run():
@@ -85,6 +103,10 @@ def main():
         event = json.load(sys.stdin)
     except Exception:
         event = {}
+
+    # Skip idle/background notifications — only ping when action is needed.
+    if not is_actionable(event):
+        sys.exit(0)
 
     if not should_run():
         sys.exit(0)

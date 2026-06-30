@@ -20,7 +20,7 @@ See the full [Setup Guide](GUIDE.md) for details.
 ## Features
 
 - **Task done + usage display** — when Claude completes a task, shows a "Task Done" notification followed by 5-hour and 7-day usage
-- **Waiting-on-you ping** — when Claude needs your approval (yes/no) or your input is idle, the display pings with a distinct buzzer (triple_ping) so you don't miss it while away from the keyboard
+- **Waiting-on-you ping** — when Claude needs your approval (a yes/no prompt or an MCP form), the display pings with a distinct buzzer (triple_ping) so you don't miss it while away from the keyboard. Idle "waiting for your next prompt" notices are ignored, so it only fires when there's actually something to act on
 - **Builder insights** — analyze your local Claude Code sessions on-device and rotate a builder profile (archetype, peak hour, top model, go-to prompt, style) across the display. Everything is computed locally — nothing leaves your machine
 - **Notifications** — send custom messages to the screen ("notify my display when done")
 - **OTP pairing** — no sticker reading, just enter the code shown on screen
@@ -52,7 +52,7 @@ The flags (all default `true`):
 |-----|----------|
 | `sounds_enabled` | Master buzzer. `false` = cards show silently |
 | `task_done_enabled` | The "Task Done" card after each response |
-| `notify_enabled` | The waiting-on-you ping (approval / idle) |
+| `notify_enabled` | The waiting-on-you ping (tool approval / MCP form) |
 | `update_check_enabled` | The silent "Update available" card (≤ once/day) |
 | `device_warning_enabled` | The in-Claude warning when the display can't be reached |
 
