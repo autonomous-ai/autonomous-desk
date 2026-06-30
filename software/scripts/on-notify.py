@@ -65,6 +65,23 @@ def ellipsize(text, box_w, size):
     return text[: max_chars - 1] + "…"
 
 
+def wrap_lines(text, box_w, size):
+    """Greedily wrap text into lines that each fit box_w at the given size."""
+    max_chars = max(box_w // (CHAR_W * size), 1)
+    lines, cur = [], ""
+    for word in text.split():
+        cand = (cur + " " + word).strip()
+        if len(cand) <= max_chars:
+            cur = cand
+        else:
+            if cur:
+                lines.append(cur)
+            cur = word
+    if cur:
+        lines.append(cur)
+    return lines or [text]
+
+
 def parse_message(message):
     """Return (title, subtitle) — a clean headline + one short line.
 
@@ -77,18 +94,19 @@ def parse_message(message):
 
 def build_payload(message, sound=NOTIFY_SOUND):
     title, subtitle = parse_message(message)
-    items = [
-        {"type": "text", "text": title, "x": 0, "y": 26, "width": 220,
-         "align": "center", "size": 2, "color": ACCENT},
-    ]
+    # Big, bold title wrapped to size 3 (drops the old "* claude code" footer
+    # so the headline gets the whole screen).
+    title_lines = wrap_lines(title, 216, 3)
+    y = 8 if len(title_lines) > 1 else 20
+    items = []
+    for line in title_lines:
+        items.append({"type": "text", "text": line, "x": 0, "y": y, "width": 220,
+                      "align": "center", "size": 3, "color": ACCENT})
+        y += 28
     if subtitle:
-        # one clean centred line at the smallest size, trimmed before it overflows
         items.append({"type": "text", "text": ellipsize(subtitle, 216, 1),
-                      "x": 0, "y": 52, "width": 220, "align": "center",
+                      "x": 0, "y": max(y + 6, 70), "width": 220, "align": "center",
                       "size": 1, "color": CREAM})
-    # keep the footer within the safe band (text below ~y=90 gets clipped)
-    items.append({"type": "text", "text": "* claude code", "x": 0, "y": 84,
-                  "width": 220, "align": "center", "size": 1, "color": MUTE})
     return {"play_sound": sound, "items": items[:6]}
 
 
