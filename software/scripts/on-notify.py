@@ -16,6 +16,8 @@ import sys
 import time
 import urllib.request
 
+import discover  # same scripts/ dir — reconnect + warn_user helpers
+
 CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
 COOLDOWN_PATH = os.path.expanduser("~/.config/autonomous-lcd-notify.last")
 COOLDOWN_SECONDS = 8
@@ -51,6 +53,17 @@ def send_to_lcd(ip, device_id, payload):
         method="POST",
     )
     urllib.request.urlopen(req, timeout=3)
+
+
+def try_send(ip, device_id, payload):
+    """Send, returning True/False instead of raising — for the reconnect flow."""
+    if not ip:
+        return False
+    try:
+        send_to_lcd(ip, device_id, payload)
+        return True
+    except Exception:
+        return False
 
 
 def build_payload(message, sound=NOTIFY_SOUND):
@@ -96,13 +109,27 @@ def main():
 
     default_id = cfg.get("default_device_id", devices[0].get("device_id"))
     dev = next((d for d in devices if d["device_id"] == default_id), devices[0])
+    device_id = dev["device_id"]
 
     payload = build_payload(event.get("message", "Claude needs you"), sound)
-    try:
-        send_to_lcd(dev["last_known_ip"], dev["device_id"], payload)
+
+    # Try the cached IP; if it's stale (DHCP moved the device), rescan the LAN
+    # and retry. If it's still unreachable, warn the user in Claude.
+    if try_send(dev.get("last_known_ip"), device_id, payload):
         mark_ran()
-    except Exception:
-        pass
+        return
+
+    new_ip = discover.reconnect(device_id)
+    if new_ip and try_send(new_ip, device_id, payload):
+        mark_ran()
+        return
+
+    if cfg.get("device_warning_enabled", True):
+        label = dev.get("label", "your desk display")
+        discover.warn_user(
+            f"⚠️ Couldn't reach {label} on your network — it may be offline or "
+            f"on another Wi-Fi. Re-pair with \"pair my display\" if it moved."
+        )
 
 
 if __name__ == "__main__":

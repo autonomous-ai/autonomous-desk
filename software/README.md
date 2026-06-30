@@ -24,6 +24,7 @@ See the full [Setup Guide](GUIDE.md) for details.
 - **Builder insights** — analyze your local Claude Code sessions on-device and rotate a builder profile (archetype, peak hour, top model, go-to prompt, style) across the display. Everything is computed locally — nothing leaves your machine
 - **Notifications** — send custom messages to the screen ("notify my display when done")
 - **OTP pairing** — no sticker reading, just enter the code shown on screen
+- **Auto-reconnect** — if your router hands the display a new IP, the hooks rescan the LAN, update the saved address, and retry; if it still can't be reached they warn you right in Claude
 - **Zero dependencies** — Python 3 stdlib only, no pip install needed
 
 ## Commands
@@ -53,6 +54,7 @@ The flags (all default `true`):
 | `task_done_enabled` | The "Task Done" card after each response |
 | `notify_enabled` | The waiting-on-you ping (approval / idle) |
 | `update_check_enabled` | The silent "Update available" card (≤ once/day) |
+| `device_warning_enabled` | The in-Claude warning when the display can't be reached |
 
 ## Requirements
 

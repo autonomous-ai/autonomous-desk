@@ -11,6 +11,8 @@ import time
 import urllib.request
 from datetime import datetime, timezone
 
+import discover  # same scripts/ dir — reconnect + warn_user helpers
+
 CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
 COOLDOWN_PATH = os.path.expanduser("~/.config/autonomous-lcd-done.last")
 COOLDOWN_SECONDS = 60
@@ -48,6 +50,17 @@ def send_to_lcd(ip, device_id, payload):
         method="POST",
     )
     urllib.request.urlopen(req, timeout=3)
+
+
+def try_send(ip, device_id, payload):
+    """Send, returning True/False instead of raising — for the reconnect flow."""
+    if not ip:
+        return False
+    try:
+        send_to_lcd(ip, device_id, payload)
+        return True
+    except Exception:
+        return False
 
 
 def _find_strings(obj):
@@ -274,7 +287,9 @@ def main():
     # User toggles (default on, preserving prior behaviour)
     sound = 20 if cfg.get("sounds_enabled", True) else 0
 
-    # 1. Send Task Done (unless disabled)
+    # 1. Send Task Done (unless disabled). If the cached IP is stale (DHCP
+    # moved the device), rescan the LAN, update it, and retry; warn the user
+    # in Claude if it's still unreachable.
     if cfg.get("task_done_enabled", True):
         task_done_payload = {
             "play_sound": sound,
@@ -282,10 +297,20 @@ def main():
                 {"type": "text", "text": "Task Done", "x": 0, "y": 34, "width": 220, "align": "center", "size": 4, "color": "#6b8f4e"},
             ],
         }
-        try:
-            send_to_lcd(ip, device_id, task_done_payload)
-        except Exception:
-            pass
+        if not try_send(ip, device_id, task_done_payload):
+            new_ip = discover.reconnect(device_id)
+            if new_ip and try_send(new_ip, device_id, task_done_payload):
+                ip = new_ip  # use the fresh IP for the cards below too
+            else:
+                if cfg.get("device_warning_enabled", True):
+                    label = dev.get("label", "your desk display")
+                    discover.warn_user(
+                        f"⚠️ Couldn't reach {label} on your network — it may be "
+                        f"offline or on another Wi-Fi. Re-pair with \"pair my "
+                        f"display\" if it moved."
+                    )
+                mark_ran()
+                sys.exit(0)
 
     mark_ran()
 

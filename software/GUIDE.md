@@ -100,7 +100,8 @@ Or edit `~/.config/autonomous-lcd.json` by hand (all default `true`):
   "sounds_enabled": true,
   "task_done_enabled": true,
   "notify_enabled": true,
-  "update_check_enabled": true
+  "update_check_enabled": true,
+  "device_warning_enabled": true
 }
 ```
 
@@ -108,6 +109,7 @@ Or edit `~/.config/autonomous-lcd.json` by hand (all default `true`):
 - `task_done_enabled: false` → no "Task Done" card (usage alerts still fire)
 - `notify_enabled: false` → no waiting-on-you ping
 - `update_check_enabled: false` → no "Update available" card
+- `device_warning_enabled: false` → no in-Claude warning when the display is unreachable
 
 > **Update available card.** When a newer plugin version is published, the
 > display shows a silent **`UPDATE AVAILABLE`** card after a task completes —
@@ -141,6 +143,23 @@ Once paired, one insight card is also folded into the regular usage refresh, so
 the display gently cycles through your profile over time. To turn this off and
 keep the ambient display usage-only, set `"show_insights": false` in
 `~/.config/autonomous-lcd.json` (default is `true`).
+
+---
+
+## If the display goes quiet
+
+The plugin remembers your display's IP address. If your router later hands the
+device a **different IP** (common after a reboot or rejoining Wi-Fi), the hooks
+notice the saved address is dead, **rescan your network**, update the saved
+address, and retry — so it usually heals itself within a task or two.
+
+If it still can't find the device, you'll see a warning **inside Claude**:
+
+> ⚠️ Couldn't reach My Display on your network — it may be offline or on another Wi-Fi. Re-pair with "pair my display" if it moved.
+
+When that happens, check that the display is powered on and on the **same Wi-Fi**
+as your computer, then run `pair my display` again. To silence the warning, set
+`"device_warning_enabled": false` in `~/.config/autonomous-lcd.json`.
 
 ---
 

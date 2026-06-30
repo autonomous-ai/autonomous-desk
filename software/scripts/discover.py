@@ -7,12 +7,22 @@ import re
 import socket
 import subprocess
 import sys
+import time
 import concurrent.futures
 import urllib.request
 import threading
 
 CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
 LCD_PORT = 3000
+
+# Re-discovery throttle: when a hook can't reach the cached IP it asks us to
+# rescan, but a device that's simply offline shouldn't trigger a full LAN sweep
+# on every single event.
+SCAN_THROTTLE_PATH = os.path.expanduser("~/.config/autonomous-lcd-scan.last")
+SCAN_THROTTLE_SECONDS = 60
+# Warning rate-limit: don't nag the user on every event while the device is down.
+WARN_PATH = os.path.expanduser("~/.config/autonomous-lcd-warn.last")
+WARN_SECONDS = 600
 
 
 def cache_check():
@@ -166,6 +176,75 @@ def parallel_scan():
             seen.add(did)
             merged.append(dev)
     return merged
+
+
+def _update_cached_ip(device_id, ip):
+    """Persist a freshly-discovered IP back into the config cache."""
+    try:
+        with open(CONFIG_PATH) as f:
+            cfg = json.load(f)
+    except Exception:
+        return
+    changed = False
+    for dev in cfg.get("devices", []):
+        if dev.get("device_id") == device_id and dev.get("last_known_ip") != ip:
+            dev["last_known_ip"] = ip
+            changed = True
+    if changed:
+        try:
+            with open(CONFIG_PATH, "w") as f:
+                json.dump(cfg, f, indent=2)
+        except Exception:
+            pass
+
+
+def _throttled(path, window):
+    try:
+        last = float(open(path).read().strip())
+        return (time.time() - last) < window
+    except Exception:
+        return False
+
+
+def _stamp(path):
+    try:
+        with open(path, "w") as f:
+            f.write(str(time.time()))
+    except Exception:
+        pass
+
+
+def reconnect(device_id):
+    """Locate a device's current IP via a LAN scan and refresh the cached IP.
+
+    Throttled (SCAN_THROTTLE_SECONDS) so back-to-back hook failures from an
+    offline device don't each trigger a full sweep. Returns the IP on success,
+    else None. Used by the hooks to recover when DHCP hands the device a new IP.
+    """
+    if _throttled(SCAN_THROTTLE_PATH, SCAN_THROTTLE_SECONDS):
+        return None
+    _stamp(SCAN_THROTTLE_PATH)
+    match = None
+    for d in parallel_scan():
+        _update_cached_ip(d["device_id"], d["ip"])
+        if d["device_id"] == device_id:
+            match = d["ip"]
+    return match
+
+
+def warn_user(message):
+    """Surface a non-blocking warning to the Claude Code user via systemMessage.
+
+    Rate-limited (WARN_SECONDS) so an offline display doesn't warn on every
+    event. Safe on both Stop and Notification hooks (printed to stdout, exit 0).
+    """
+    if _throttled(WARN_PATH, WARN_SECONDS):
+        return
+    _stamp(WARN_PATH)
+    try:
+        print(json.dumps({"systemMessage": message}))
+    except Exception:
+        pass
 
 
 def main():
