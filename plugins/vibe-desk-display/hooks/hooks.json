@@ -1,0 +1,30 @@
+{
+  "description": "Autonomous Thinking Desk lifecycle notifications for Codex.",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/scripts/on-stop-done.py\"",
+            "timeout": 60,
+            "statusMessage": "Updating the desk display"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/scripts/on-permission-request.py\"",
+            "timeout": 25,
+            "statusMessage": "Pinging the desk display"
+          }
+        ]
+      }
+    ]
+  }
+}

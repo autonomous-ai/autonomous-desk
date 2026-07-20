@@ -1,0 +1,29 @@
+{
+  "name": "vibe-desk-display",
+  "version": "0.1.0",
+  "description": "Connect Codex notifications, approvals, usage, and local builder insights to an Autonomous Thinking Desk display.",
+  "author": {
+    "name": "Autonomous",
+    "url": "https://www.autonomous.ai/"
+  },
+  "homepage": "https://github.com/autonomous-ai/autonomous-desk/tree/main/plugins/vibe-desk-display",
+  "repository": "https://github.com/autonomous-ai/autonomous-desk",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "keywords": ["codex", "desk", "display", "notifications", "usage"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Autonomous Desk Display",
+    "shortDescription": "Codex status and usage on your desk",
+    "longDescription": "Pair an Autonomous Thinking Desk display, receive task-complete and approval notifications, inspect Codex usage, and rotate private local builder insights.",
+    "developerName": "Autonomous",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "websiteURL": "https://www.autonomous.ai/standing-desks/autonomous-desk-5-ai",
+    "defaultPrompt": [
+      "Pair my Autonomous Desk display with Codex.",
+      "Show my Codex usage on the desk display.",
+      "Show my Codex builder profile."
+    ],
+    "brandColor": "#D4845A"
+  }
+}
