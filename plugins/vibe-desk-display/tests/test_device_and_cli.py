@@ -14,6 +14,7 @@ if SCRIPTS not in sys.path:
 
 import desk_display
 import device
+import discover
 
 
 class DeviceAndCliTests(unittest.TestCase):
@@ -26,6 +27,7 @@ class DeviceAndCliTests(unittest.TestCase):
             desk_display.device.CONFIG_DIR,
             desk_display.device.CONFIG_PATH,
             desk_display.device.PAIRING_PATH,
+            discover.CONFIG_PATH,
         )
         config_path = os.path.join(self.temp.name, "autonomous-lcd.json")
         pairing_path = os.path.join(self.temp.name, "pairing.json")
@@ -35,6 +37,7 @@ class DeviceAndCliTests(unittest.TestCase):
         desk_display.device.CONFIG_DIR = self.temp.name
         desk_display.device.CONFIG_PATH = config_path
         desk_display.device.PAIRING_PATH = pairing_path
+        discover.CONFIG_PATH = config_path
 
     def tearDown(self):
         (
@@ -44,6 +47,7 @@ class DeviceAndCliTests(unittest.TestCase):
             desk_display.device.CONFIG_DIR,
             desk_display.device.CONFIG_PATH,
             desk_display.device.PAIRING_PATH,
+            discover.CONFIG_PATH,
         ) = self.old_values
         self.temp.cleanup()
 
@@ -104,6 +108,57 @@ class DeviceAndCliTests(unittest.TestCase):
         self.assertEqual(len(payload["items"][0]["text"]), 95)
         self.assertEqual(payload["items"][1]["value"], 100)
         self.assertEqual(payload["play_sound"], 20)
+
+    def _two_device_cfg(self, ip_a="10.0.0.55", ip_b="10.0.0.6"):
+        cfg = {
+            "devices": [
+                {"device_id": "lcd-a", "label": "A", "last_known_ip": ip_a},
+                {"device_id": "lcd-b", "label": "B", "last_known_ip": ip_b},
+            ],
+            "default_device_id": "lcd-a",
+        }
+        device.save_config(cfg)
+        return device.load_config()
+
+    def test_send_with_reconnect_does_not_clobber_other_device_ips(self):
+        cfg = self._two_device_cfg()
+        device_a = cfg["devices"][0]
+
+        def fake_reconnect(device_id):
+            on_disk = device.load_config()
+            for dev in on_disk["devices"]:
+                if dev["device_id"] == "lcd-a":
+                    dev["last_known_ip"] = "10.0.0.55"
+                elif dev["device_id"] == "lcd-b":
+                    dev["last_known_ip"] = "10.0.0.66"
+            device.save_config(on_disk)
+            self.assertEqual(device_id, "lcd-a")
+            return "10.0.0.55"
+
+        with mock.patch.object(device, "try_send", side_effect=[False, True]), mock.patch.object(
+            discover, "reconnect", side_effect=fake_reconnect
+        ):
+            self.assertEqual(
+                device.send_with_reconnect(cfg, device_a, {"text": "hi"}),
+                "10.0.0.55",
+            )
+
+        saved = {dev["device_id"]: dev["last_known_ip"] for dev in device.load_config()["devices"]}
+        self.assertEqual(saved["lcd-a"], "10.0.0.55")
+        self.assertEqual(saved["lcd-b"], "10.0.0.66")
+        self.assertEqual(cfg["devices"][1]["last_known_ip"], "10.0.0.66")
+
+    def test_update_cached_ip_writes_atomically(self):
+        self._two_device_cfg()
+        with mock.patch.object(device, "atomic_write_json", wraps=device.atomic_write_json) as writer:
+            discover._update_cached_ip("lcd-b", "10.0.0.66")
+        writer.assert_called_once()
+        self.assertEqual(writer.call_args[0][0], device.CONFIG_PATH)
+        saved = {dev["device_id"]: dev["last_known_ip"] for dev in device.load_config()["devices"]}
+        self.assertEqual(saved["lcd-a"], "10.0.0.55")
+        self.assertEqual(saved["lcd-b"], "10.0.0.66")
+        mode = stat.S_IMODE(os.stat(device.CONFIG_PATH).st_mode)
+        self.assertEqual(mode, 0o600)
 
 
 if __name__ == "__main__":

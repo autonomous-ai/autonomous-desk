@@ -30,6 +30,10 @@ CACHE_PATH = os.path.join(device.CONFIG_DIR, "autonomous-lcd-codex-insights.json
 INDEX_PATH = os.path.join(device.CONFIG_DIR, "autonomous-lcd-codex-insights.idx")
 CACHE_TTL = 3600  # recompute the profile at most once an hour
 CARD_DELAY = float(os.environ.get("AUTONOMOUS_LCD_CARD_DELAY", "6"))
+# Cold-cache analyze() runs on the 60s Stop hook. Bound the scan so a large
+# ~/.codex/sessions tree cannot blow the timeout.
+SESSION_MAX_AGE_SECONDS = 90 * 24 * 3600
+SESSION_MAX_FILES = 120
 
 EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit", "apply_patch"}
 # short, corrective prompts that signal a "Director" steering style
@@ -49,9 +53,25 @@ THANKS_RE = re.compile(
 # Transcript parsing
 # --------------------------------------------------------------------------- #
 def iter_sessions():
-    """Yield every local Codex JSONL session transcript."""
+    """Yield recent local Codex JSONL session transcripts, newest first.
+
+    A cold cache on the Stop hook must finish inside the 60s timeout, so this
+    skips files older than SESSION_MAX_AGE_SECONDS (~90 days) and caps the
+    number of files at SESSION_MAX_FILES.
+    """
     pattern = os.path.join(SESSIONS_DIR, "**", "*.jsonl")
-    yield from glob.glob(pattern, recursive=True)
+    cutoff = time.time() - SESSION_MAX_AGE_SECONDS
+    ranked = []
+    for path in glob.glob(pattern, recursive=True):
+        try:
+            mtime = os.path.getmtime(path)
+        except OSError:
+            continue
+        if mtime >= cutoff:
+            ranked.append((mtime, path))
+    ranked.sort(reverse=True)
+    for _, path in ranked[:SESSION_MAX_FILES]:
+        yield path
 
 
 def parse_ts(s):

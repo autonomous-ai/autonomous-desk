@@ -95,7 +95,29 @@ def _limit_label(window_minutes):
     return "{} min".format(minutes)
 
 
-def _normalize_limits(rate_limits):
+def _window_resets_at(raw, now=None):
+    """Absolute reset time from either resets_at or resets_in_seconds.
+
+    Current Codex token_count windows emit ``resets_at`` (unix epoch). Some
+    builds, including exec-mode JSONL, emit ``resets_in_seconds`` instead.
+    """
+    if not isinstance(raw, dict):
+        return None
+    resets_at = raw.get("resets_at")
+    if resets_at not in (None, ""):
+        return resets_at
+    seconds = raw.get("resets_in_seconds")
+    if seconds in (None, ""):
+        return None
+    try:
+        seconds = float(seconds)
+    except (TypeError, ValueError):
+        return None
+    now = now or datetime.now(timezone.utc)
+    return now.timestamp() + seconds
+
+
+def _normalize_limits(rate_limits, now=None):
     normalized = []
     if not isinstance(rate_limits, dict):
         return normalized
@@ -114,14 +136,14 @@ def _normalize_limits(rate_limits):
                 "label": _limit_label(minutes),
                 "used_percent": max(0, min(100, int(round(used)))),
                 "window_minutes": minutes,
-                "resets_at": raw.get("resets_at"),
+                "resets_at": _window_resets_at(raw, now=now),
             }
         )
     normalized.sort(key=lambda item: item.get("window_minutes") or 10**12)
     return normalized
 
 
-def read_usage(transcript_path=None):
+def read_usage(transcript_path=None, now=None):
     for path in _candidate_paths(transcript_path):
         event = _latest_token_event(path)
         if not event:
@@ -141,7 +163,7 @@ def read_usage(transcript_path=None):
         return {
             "source_path": path,
             "timestamp": event.get("timestamp"),
-            "limits": _normalize_limits(payload.get("rate_limits")),
+            "limits": _normalize_limits(payload.get("rate_limits"), now=now),
             "tokens": info.get("total_token_usage") or {},
             "last_tokens": last_usage,
             "model_context_window": context_window,
@@ -183,10 +205,10 @@ def progress_color(percent):
     return "#6b8f4e"
 
 
-def build_limit_card(limit_data, sound=0):
+def build_limit_card(limit_data, sound=0, now=None):
     percent = int(limit_data.get("used_percent", 0))
     label = str(limit_data.get("label") or "Account")
-    reset = time_left(limit_data.get("resets_at"))
+    reset = time_left(limit_data.get("resets_at"), now=now)
     return {
         "play_sound": sound,
         "items": [

@@ -157,6 +157,21 @@ def maybe_show_update(cfg, dev, now=None):
         _save_update_state(state)
 
 
+def event_transcript_path(event):
+    """Return the session JSONL path from a Stop hook payload.
+
+    Current Codex (and Claude Code) emit ``transcript_path``. Codex session
+    files are also recorded as ``rollout_path`` (rollout-*.jsonl).
+    """
+    if not isinstance(event, dict):
+        return None
+    for key in ("transcript_path", "rollout_path"):
+        value = event.get(key)
+        if value:
+            return value
+    return None
+
+
 def _warn_unreachable(cfg, dev):
     if not cfg.get("device_warning_enabled", True):
         return
@@ -201,7 +216,7 @@ def main():
     if cfg.get("update_check_enabled", True):
         maybe_show_update(cfg, dev)
 
-    usage = codex_usage.read_usage(event.get("transcript_path"))
+    usage = codex_usage.read_usage(event_transcript_path(event))
     limits = (usage or {}).get("limits") or []
     try:
         threshold = int(cfg.get("usage_threshold", 80))

@@ -128,6 +128,15 @@ def mark_seen(cfg, device_id, ip=None):
             pass
 
 
+def _adopt_disk_config(cfg):
+    """Replace an in-memory config dict with the current on-disk snapshot."""
+    if not isinstance(cfg, dict):
+        return
+    fresh = load_config()
+    cfg.clear()
+    cfg.update(fresh)
+
+
 def send_with_reconnect(cfg, dev, payload):
     """Send to the cached IP, rediscovering the device once if needed."""
     device_id = dev.get("device_id")
@@ -143,6 +152,10 @@ def send_with_reconnect(cfg, dev, payload):
     except Exception:
         fresh_ip = None
     if fresh_ip and try_send(fresh_ip, device_id, payload):
+        # reconnect() already persisted every discovered device. Reload so
+        # mark_seen() cannot write this stale in-memory snapshot back and
+        # revert the other devices' IPs.
+        _adopt_disk_config(cfg)
         mark_seen(cfg, device_id, fresh_ip)
         return fresh_ip
     return None

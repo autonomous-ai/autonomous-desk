@@ -101,6 +101,81 @@ class CodexUsageTests(unittest.TestCase):
         path = self.write_session([{"type": "event_msg", "payload": {"type": "task_complete"}}])
         self.assertIsNone(codex_usage.read_usage(path))
 
+    def test_resets_at_epoch_is_used(self):
+        now = datetime(2026, 7, 20, 0, 0, tzinfo=timezone.utc)
+        path = self.write_session(
+            [
+                {
+                    "type": "event_msg",
+                    "payload": {
+                        "type": "token_count",
+                        "rate_limits": {
+                            "primary": {
+                                "used_percent": 80,
+                                "window_minutes": 300,
+                                "resets_at": now.timestamp() + 9000,
+                            }
+                        },
+                    },
+                }
+            ],
+            name="resets-at.jsonl",
+        )
+        result = codex_usage.read_usage(path, now=now)
+        self.assertEqual(result["limits"][0]["resets_at"], now.timestamp() + 9000)
+        card = codex_usage.build_limit_card(result["limits"][0], now=now)
+        self.assertIn(
+            "Resets in 2h 30m",
+            [item.get("text") for item in card["items"]],
+        )
+
+    def test_resets_in_seconds_is_converted(self):
+        now = datetime(2026, 7, 20, 0, 0, tzinfo=timezone.utc)
+        path = self.write_session(
+            [
+                {
+                    "type": "event_msg",
+                    "payload": {
+                        "type": "token_count",
+                        "info": None,
+                        "rate_limits": {
+                            "primary": {
+                                "used_percent": 0.0,
+                                "window_minutes": 299,
+                                "resets_in_seconds": 9000,
+                            },
+                            "secondary": {
+                                "used_percent": 6.0,
+                                "window_minutes": 10079,
+                                "resets_in_seconds": 90000,
+                            },
+                        },
+                    },
+                }
+            ],
+            name="resets-in-seconds.jsonl",
+        )
+        result = codex_usage.read_usage(path, now=now)
+        self.assertEqual(result["limits"][0]["resets_at"], now.timestamp() + 9000)
+        self.assertEqual(result["limits"][1]["resets_at"], now.timestamp() + 90000)
+        card = codex_usage.build_limit_card(result["limits"][0], now=now)
+        texts = [item.get("text") for item in card["items"]]
+        self.assertIn("Resets in 2h 30m", texts)
+        self.assertNotIn("Resets in N/A", texts)
+
+    def test_resets_at_wins_over_resets_in_seconds(self):
+        now = datetime(2026, 7, 20, 0, 0, tzinfo=timezone.utc)
+        raw = {
+            "used_percent": 10,
+            "window_minutes": 300,
+            "resets_at": now.timestamp() + 3600,
+            "resets_in_seconds": 99,
+        }
+        self.assertEqual(
+            codex_usage._window_resets_at(raw, now=now),
+            now.timestamp() + 3600,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

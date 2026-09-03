@@ -1,9 +1,12 @@
+import io
 import json
 import importlib.util
 import os
 import sys
 import tempfile
+import time
 import unittest
+from unittest import mock
 
 
 PLUGIN_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -35,8 +38,8 @@ class InsightsAndPluginTests(unittest.TestCase):
         insights.SESSIONS_DIR = self.old_sessions
         self.temp.cleanup()
 
-    def write_session(self):
-        path = os.path.join(self.temp.name, "rollout.jsonl")
+    def write_session(self, name="rollout.jsonl", model="gpt-5.6-sol"):
+        path = os.path.join(self.temp.name, name)
         events = [
             {
                 "timestamp": "2026-07-20T02:00:00Z",
@@ -46,7 +49,7 @@ class InsightsAndPluginTests(unittest.TestCase):
             {
                 "timestamp": "2026-07-20T02:00:01Z",
                 "type": "turn_context",
-                "payload": {"model": "gpt-5.6-sol"},
+                "payload": {"model": model},
             },
             {
                 "timestamp": "2026-07-20T02:00:02Z",
@@ -78,6 +81,7 @@ class InsightsAndPluginTests(unittest.TestCase):
         with open(path, "w", encoding="utf-8") as handle:
             for event in events:
                 handle.write(json.dumps(event) + "\n")
+        return path
 
     def test_codex_session_profile(self):
         self.write_session()
@@ -108,6 +112,79 @@ class InsightsAndPluginTests(unittest.TestCase):
 
     def test_version_comparison_ignores_build_metadata(self):
         self.assertEqual(on_stop_done._parse_version("1.2.3+codex.local"), (1, 2, 3))
+
+    def test_analyze_skips_sessions_older_than_90_days(self):
+        recent = self.write_session(name="recent.jsonl", model="gpt-5.6-sol")
+        old = self.write_session(name="old.jsonl", model="gpt-4.1")
+        old_mtime = time.time() - (100 * 24 * 3600)
+        os.utime(old, (old_mtime, old_mtime))
+        os.utime(recent, None)
+        profile = insights.analyze()
+        self.assertEqual(profile["activity"]["sessions"], 1)
+        self.assertEqual(profile["models"]["top_raw"], "gpt-5.6-sol")
+        self.assertNotIn(old, list(insights.iter_sessions()))
+
+    def test_analyze_caps_session_file_count(self):
+        newer = self.write_session(name="newer.jsonl", model="gpt-5.6-sol")
+        older = self.write_session(name="older.jsonl", model="gpt-4.1")
+        now = time.time()
+        os.utime(older, (now - 10, now - 10))
+        os.utime(newer, (now, now))
+        original = insights.SESSION_MAX_FILES
+        insights.SESSION_MAX_FILES = 1
+        try:
+            chosen = list(insights.iter_sessions())
+            profile = insights.analyze()
+        finally:
+            insights.SESSION_MAX_FILES = original
+        self.assertEqual(chosen, [newer])
+        self.assertEqual(profile["activity"]["sessions"], 1)
+        self.assertEqual(profile["models"]["top_raw"], "gpt-5.6-sol")
+
+    def test_event_transcript_path_accepts_both_field_names(self):
+        claude_or_current = {"transcript_path": "/tmp/session.jsonl"}
+        codex_rollout = {"rollout_path": "/tmp/rollout-2026-07-20.jsonl"}
+        self.assertEqual(
+            on_stop_done.event_transcript_path(claude_or_current),
+            "/tmp/session.jsonl",
+        )
+        self.assertEqual(
+            on_stop_done.event_transcript_path(codex_rollout),
+            "/tmp/rollout-2026-07-20.jsonl",
+        )
+        self.assertIsNone(on_stop_done.event_transcript_path({}))
+
+    def test_stop_hook_reads_both_transcript_field_names(self):
+        old_dir = on_stop_done.device.CONFIG_DIR
+        old_path = on_stop_done.device.CONFIG_PATH
+        on_stop_done.device.CONFIG_DIR = self.temp.name
+        on_stop_done.device.CONFIG_PATH = os.path.join(self.temp.name, "autonomous-lcd.json")
+        on_stop_done.device.save_config(
+            {
+                "devices": [{"device_id": "lcd-a", "last_known_ip": "10.0.0.55"}],
+                "update_check_enabled": False,
+                "show_insights": False,
+            }
+        )
+        try:
+            for key, path in (
+                ("transcript_path", "/tmp/session.jsonl"),
+                ("rollout_path", "/tmp/rollout.jsonl"),
+            ):
+                with mock.patch.object(on_stop_done, "should_run", return_value=True), mock.patch.object(
+                    on_stop_done, "mark_ran"
+                ), mock.patch.object(
+                    on_stop_done.device, "send_with_reconnect", return_value="10.0.0.55"
+                ), mock.patch.object(
+                    on_stop_done.codex_usage, "read_usage", return_value=None
+                ) as reader, mock.patch.object(
+                    on_stop_done.sys, "stdin", io.StringIO(json.dumps({key: path}))
+                ):
+                    on_stop_done.main()
+                reader.assert_called_once_with(path)
+        finally:
+            on_stop_done.device.CONFIG_DIR = old_dir
+            on_stop_done.device.CONFIG_PATH = old_path
 
 
 if __name__ == "__main__":

@@ -184,8 +184,9 @@ def parallel_scan():
 
 def _update_cached_ip(device_id, ip):
     """Persist a freshly-discovered IP back into the config cache."""
+    path = device.CONFIG_PATH
     try:
-        with open(CONFIG_PATH) as f:
+        with open(path) as f:
             cfg = json.load(f)
     except Exception:
         return
@@ -196,8 +197,7 @@ def _update_cached_ip(device_id, ip):
             changed = True
     if changed:
         try:
-            with open(CONFIG_PATH, "w") as f:
-                json.dump(cfg, f, indent=2)
+            device.atomic_write_json(path, cfg)
         except Exception:
             pass
 
