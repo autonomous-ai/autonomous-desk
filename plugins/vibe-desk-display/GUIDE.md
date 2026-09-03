@@ -14,6 +14,9 @@ Restart Codex or start a new task so the new skill and hooks are loaded.
 In Codex CLI, run `/hooks`. Review and trust the plugin's `Stop` and
 `PermissionRequest` command hooks. Codex records trust against the exact hook
 definition, so it may ask you to review again after an update changes a hook.
+In the Codex app or IDE chat, `/hooks` is an ordinary message and does not
+open the trust UI — run `codex` once in a terminal instead; trust persists in
+`~/.codex/config.toml` under `[hooks.state]` and applies everywhere after.
 
 Hooks are enabled by default. If your configuration disables them, ensure this
 is not present in `~/.codex/config.toml`:
@@ -41,8 +44,9 @@ mobile app.
 ## What happens next
 
 The `Stop` hook sends a `Codex Done` card after each completed turn, limited to
-once per minute. If an available account rate-limit window reaches the usage
-threshold (80% by default), up to two usage cards follow.
+once per `done_cooldown_seconds` (60 by default). If an available account
+rate-limit window reaches the usage threshold (80% by default), up to two
+usage cards follow.
 
 The `PermissionRequest` hook sends a distinct `CODEX NEEDS YOU` card when Codex
 is waiting for approval. It does not depend on terminal focus or idle notices.
@@ -79,6 +83,7 @@ Ask Codex in natural language, for example:
 - `Stop the Codex completion card`
 - `Stop pinging the display for approvals`
 - `Set my usage warning threshold to 60`
+- `Set my completion-card cooldown to 15 seconds`
 - `Hide builder insights`
 - `Turn every desk notification back on`
 
@@ -86,6 +91,10 @@ The shared configuration is stored at `~/.config/autonomous-lcd.json`, the same
 location used by the Claude Code plugin. This lets one paired display work with
 both integrations. Settings also apply to both unless a setting is specific to
 one plugin.
+
+`done_cooldown_seconds` (default 60) is the minimum time between `Codex Done`
+cards. Turns inside that window are skipped so back-to-back chat does not look
+like a missed delivery. Set it to `0` to send after every turn.
 
 ## Auto-reconnect and troubleshooting
 
@@ -99,6 +108,9 @@ rescan and one retry. If it still cannot be reached:
 4. Run `/hooks` and confirm both hooks are enabled and trusted.
 5. Complete a Codex turn before requesting usage, so a current local usage
    event exists.
+6. If a skill-path send says the Codex sandbox blocked the LAN request, the
+   display is often fine — re-run with escalated permissions so the shell
+   can reach the LAN. Hooks are not sandboxed.
 
 ## Local development
 

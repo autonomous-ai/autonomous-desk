@@ -154,6 +154,41 @@ class InsightsAndPluginTests(unittest.TestCase):
         )
         self.assertIsNone(on_stop_done.event_transcript_path({}))
 
+    def test_should_run_honors_done_cooldown_seconds(self):
+        old_dir = on_stop_done.device.CONFIG_DIR
+        old_path = on_stop_done.device.CONFIG_PATH
+        old_cool = on_stop_done.COOLDOWN_PATH
+        on_stop_done.device.CONFIG_DIR = self.temp.name
+        on_stop_done.device.CONFIG_PATH = os.path.join(
+            self.temp.name, "autonomous-lcd.json"
+        )
+        on_stop_done.COOLDOWN_PATH = os.path.join(self.temp.name, "done.last")
+        try:
+            now = 1_000_000.0
+            on_stop_done.device.save_config({"done_cooldown_seconds": 60})
+            on_stop_done.mark_ran(now)
+            self.assertFalse(
+                on_stop_done.should_run(
+                    now=now + 30, cooldown=on_stop_done.cooldown_seconds()
+                )
+            )
+            on_stop_done.device.save_config({"done_cooldown_seconds": 15})
+            self.assertTrue(
+                on_stop_done.should_run(
+                    now=now + 30, cooldown=on_stop_done.cooldown_seconds()
+                )
+            )
+            on_stop_done.device.save_config({"done_cooldown_seconds": 0})
+            self.assertTrue(
+                on_stop_done.should_run(now=now, cooldown=on_stop_done.cooldown_seconds())
+            )
+            on_stop_done.device.save_config({"done_cooldown_seconds": "nope"})
+            self.assertEqual(on_stop_done.cooldown_seconds(), 60)
+        finally:
+            on_stop_done.device.CONFIG_DIR = old_dir
+            on_stop_done.device.CONFIG_PATH = old_path
+            on_stop_done.COOLDOWN_PATH = old_cool
+
     def test_stop_hook_reads_both_transcript_field_names(self):
         old_dir = on_stop_done.device.CONFIG_DIR
         old_path = on_stop_done.device.CONFIG_PATH

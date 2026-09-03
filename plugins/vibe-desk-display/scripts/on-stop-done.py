@@ -13,7 +13,7 @@ import device
 
 COOLDOWN_PATH = os.path.join(device.CONFIG_DIR, "autonomous-lcd-codex-done.last")
 UPDATE_STATE_PATH = os.path.join(device.CONFIG_DIR, "autonomous-lcd-codex-update.json")
-COOLDOWN_SECONDS = 60
+COOLDOWN_SECONDS = 60  # default; override with done_cooldown_seconds
 SECTION_DELAY = float(os.environ.get("AUTONOMOUS_LCD_SECTION_DELAY", "5"))
 UPDATE_CHECK_INTERVAL = 24 * 3600
 PLUGIN_JSON_URL = (
@@ -22,12 +22,24 @@ PLUGIN_JSON_URL = (
 )
 
 
-def should_run(now=None):
+def cooldown_seconds(cfg=None):
+    if cfg is None:
+        cfg = device.load_config()
+    try:
+        value = int(cfg.get("done_cooldown_seconds", COOLDOWN_SECONDS))
+    except (TypeError, ValueError):
+        return COOLDOWN_SECONDS
+    return max(0, value)
+
+
+def should_run(now=None, cooldown=None):
     now = time.time() if now is None else now
+    if cooldown is None:
+        cooldown = cooldown_seconds()
     try:
         with open(COOLDOWN_PATH, "r", encoding="utf-8") as handle:
             last = float(handle.read().strip())
-        return now - last >= COOLDOWN_SECONDS
+        return now - last >= cooldown
     except (OSError, TypeError, ValueError):
         return True
 
@@ -194,10 +206,10 @@ def main():
     except (TypeError, ValueError):
         event = {}
 
-    if not should_run():
+    cfg = device.load_config()
+    if not should_run(cooldown=cooldown_seconds(cfg)):
         return
 
-    cfg = device.load_config()
     dev = device.get_device(cfg)
     if not dev:
         return

@@ -24,6 +24,18 @@ BOOL_KEYS = {
     "device_warning_enabled",
     "show_insights",
 }
+WIFI_UNREACHABLE = "The display could not be reached. Check its Wi-Fi connection."
+SANDBOX_UNREACHABLE = (
+    "The LAN request was blocked by the Codex sandbox (network access is off). "
+    "Re-run this command with escalated permissions so it can reach the display. "
+    "If it already ran outside the sandbox, check the display's Wi-Fi connection."
+)
+
+
+def unreachable_message():
+    if device.last_send_blocked_by_sandbox():
+        return SANDBOX_UNREACHABLE
+    return WIFI_UNREACHABLE
 
 
 def _pairing_payload(code):
@@ -96,10 +108,13 @@ def pair_start(_args):
             )
 
     if not pending:
-        print(
-            "Displays were found but could not be reached. Check the Wi-Fi "
-            "connection and try again."
-        )
+        if device.last_send_blocked_by_sandbox():
+            print(SANDBOX_UNREACHABLE)
+        else:
+            print(
+                "Displays were found but could not be reached. Check the Wi-Fi "
+                "connection and try again."
+            )
         return 1
 
     device.atomic_write_json(
@@ -200,7 +215,7 @@ def notify(args):
         print(json.dumps({"target": selected.get("last_known_ip"), "payload": payload}, indent=2))
         return 0
     if not device.send_with_reconnect(cfg, selected, payload):
-        print("The display could not be reached. Check its Wi-Fi connection.")
+        print(unreachable_message())
         return 1
     print("Notification sent.")
     return 0
@@ -249,7 +264,7 @@ def send_layout(args):
         print(json.dumps({"target": selected.get("last_known_ip"), "payload": payload}, indent=2))
         return 0
     if not device.send_with_reconnect(cfg, selected, payload):
-        print("The display could not be reached. Check its Wi-Fi connection.")
+        print(unreachable_message())
         return 1
     print("Layout sent.")
     return 0
@@ -292,7 +307,7 @@ def usage(args):
         if not device.send_with_reconnect(
             cfg, selected, codex_usage.build_limit_card(limit_data, card_sound)
         ):
-            print("The display could not be reached. Check its Wi-Fi connection.")
+            print(unreachable_message())
             return 1
     if cfg.get("show_insights", True):
         try:
@@ -318,6 +333,15 @@ def configure(args):
         if value < 0 or value > 100:
             print("usage_threshold must be a number from 0 to 100.")
             return 1
+    elif args.key == "done_cooldown_seconds":
+        try:
+            value = int(args.value)
+        except ValueError:
+            print("done_cooldown_seconds must be a whole number of seconds (0 or more).")
+            return 1
+        if value < 0:
+            print("done_cooldown_seconds must be a whole number of seconds (0 or more).")
+            return 1
     elif args.key in BOOL_KEYS:
         low = args.value.lower()
         if low not in {"true", "false", "on", "off", "yes", "no", "1", "0"}:
@@ -342,6 +366,7 @@ def status(_args):
     print("Paired display: {}".format(selected.get("label", "My Display")))
     print("Sounds: {}".format("on" if cfg.get("sounds_enabled", True) else "off"))
     print("Usage threshold: {}%".format(cfg.get("usage_threshold", 80)))
+    print("Done cooldown: {}s".format(cfg.get("done_cooldown_seconds", 60)))
     return 0
 
 

@@ -1,10 +1,13 @@
 import argparse
+import errno
+import io
 import json
 import os
 import stat
 import sys
 import tempfile
 import unittest
+import urllib.error
 from unittest import mock
 
 
@@ -55,7 +58,9 @@ class DeviceAndCliTests(unittest.TestCase):
         device.save_config({"devices": []})
         mode = stat.S_IMODE(os.stat(device.CONFIG_PATH).st_mode)
         self.assertEqual(mode, 0o600)
-        self.assertEqual(device.load_config()["usage_threshold"], 80)
+        loaded = device.load_config()
+        self.assertEqual(loaded["usage_threshold"], 80)
+        self.assertEqual(loaded["done_cooldown_seconds"], 60)
 
     def test_markdown_is_flattened_and_limited(self):
         text = device.strip_markdown("# [Build](https://example.com) `passed` " + "x" * 600)
@@ -95,6 +100,14 @@ class DeviceAndCliTests(unittest.TestCase):
         args = argparse.Namespace(key="sounds_enabled", value="off")
         self.assertEqual(desk_display.configure(args), 0)
         self.assertFalse(device.load_config()["sounds_enabled"])
+
+    def test_done_cooldown_seconds_configuration(self):
+        args = argparse.Namespace(key="done_cooldown_seconds", value="15")
+        self.assertEqual(desk_display.configure(args), 0)
+        self.assertEqual(device.load_config()["done_cooldown_seconds"], 15)
+        bad = argparse.Namespace(key="done_cooldown_seconds", value="-1")
+        self.assertEqual(desk_display.configure(bad), 1)
+        self.assertEqual(device.load_config()["done_cooldown_seconds"], 15)
 
     def test_layout_validation_clamps_progress_and_text(self):
         payload = desk_display._validate_layout(
@@ -159,6 +172,76 @@ class DeviceAndCliTests(unittest.TestCase):
         self.assertEqual(saved["lcd-b"], "10.0.0.66")
         mode = stat.S_IMODE(os.stat(device.CONFIG_PATH).st_mode)
         self.assertEqual(mode, 0o600)
+
+    def test_sandbox_network_error_is_distinguished(self):
+        wrapped = urllib.error.URLError(OSError(errno.EPERM, "Operation not permitted"))
+        self.assertTrue(device.is_sandbox_network_error(wrapped))
+        self.assertTrue(
+            device.is_sandbox_network_error(OSError(errno.EACCES, "Permission denied"))
+        )
+        self.assertFalse(device.is_sandbox_network_error(TimeoutError("timed out")))
+        self.assertFalse(
+            device.is_sandbox_network_error(ConnectionRefusedError("refused"))
+        )
+
+    def test_try_send_marks_sandbox_block(self):
+        blocked = urllib.error.URLError(OSError(errno.EPERM, "Operation not permitted"))
+        with mock.patch.object(device, "send_to_lcd", side_effect=blocked):
+            self.assertFalse(device.try_send("10.0.0.55", "lcd-a", {"text": "hi"}))
+        self.assertTrue(device.last_send_blocked_by_sandbox())
+        with mock.patch.object(device, "send_to_lcd", side_effect=TimeoutError("timed out")):
+            self.assertFalse(device.try_send("10.0.0.55", "lcd-a", {"text": "hi"}))
+        self.assertFalse(device.last_send_blocked_by_sandbox())
+
+    def test_notify_sandbox_error_is_not_wifi(self):
+        device.save_config(
+            {
+                "devices": [
+                    {"device_id": "lcd-a", "label": "Desk", "last_known_ip": "10.0.0.55"}
+                ]
+            }
+        )
+        args = argparse.Namespace(
+            device=None,
+            message="hi",
+            size=2,
+            color="green",
+            sound=20,
+            dry_run=False,
+        )
+        with mock.patch.object(
+            desk_display.device, "send_with_reconnect", return_value=None
+        ), mock.patch.object(
+            desk_display.device, "last_send_blocked_by_sandbox", return_value=True
+        ), mock.patch("sys.stdout", new_callable=io.StringIO) as out:
+            self.assertEqual(desk_display.notify(args), 1)
+        text = out.getvalue()
+        self.assertIn("sandbox", text.lower())
+        self.assertNotIn(desk_display.WIFI_UNREACHABLE, text)
+
+    def test_notify_wifi_error_when_not_sandbox(self):
+        device.save_config(
+            {
+                "devices": [
+                    {"device_id": "lcd-a", "label": "Desk", "last_known_ip": "10.0.0.55"}
+                ]
+            }
+        )
+        args = argparse.Namespace(
+            device=None,
+            message="hi",
+            size=2,
+            color="green",
+            sound=20,
+            dry_run=False,
+        )
+        with mock.patch.object(
+            desk_display.device, "send_with_reconnect", return_value=None
+        ), mock.patch.object(
+            desk_display.device, "last_send_blocked_by_sandbox", return_value=False
+        ), mock.patch("sys.stdout", new_callable=io.StringIO) as out:
+            self.assertEqual(desk_display.notify(args), 1)
+        self.assertIn(desk_display.WIFI_UNREACHABLE, out.getvalue())
 
 
 if __name__ == "__main__":

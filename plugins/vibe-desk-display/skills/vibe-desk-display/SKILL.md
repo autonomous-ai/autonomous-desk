@@ -12,6 +12,15 @@ that the current working directory is the plugin directory.
 Keep pairing output friendly. Do not show device IDs, IP addresses, config
 paths, HTTP responses, pending pairing data, or raw tracebacks to the user.
 
+These scripts POST to the display on the LAN. The Codex turn sandbox has
+`network_access: false`, so run every command that talks to the display
+(`pair-start`, `pair-complete`, `notify`, `layout`, `usage --display`,
+`insights.py --display`) with escalated permissions
+(`with_escalated_permissions: true`, or `sandbox_permissions=require_escalated`)
+and a short justification that it is a local-network POST to the paired
+display. A sandbox-blocked POST is not a Wi-Fi failure — the display is
+often up. Hooks run outside the sandbox and do not need this.
+
 ## Pair a display
 
 1. Tell the user: `Scanning your network...`
@@ -86,6 +95,7 @@ Map natural-language requests as follows:
 - hide/show builder insights -> `show_insights false/true`
 - silence/enable offline warnings -> `device_warning_enabled false/true`
 - set the warning threshold -> `usage_threshold 0..100`
+- set the completion-card cooldown -> `done_cooldown_seconds` (seconds, 0 or more)
 
 Settings take effect on the next event; Codex does not need to restart.
 
@@ -100,7 +110,8 @@ Settings take effect on the next event; Codex does not need to restart.
 The bundled hooks do the following after the user trusts them in `/hooks`:
 
 - `Stop`: show `Codex Done`, then show account usage cards when a local rate
-  limit reaches the configured threshold. Rate-limited to once per minute.
+  limit reaches the configured threshold. Rate-limited by
+  `done_cooldown_seconds` (default 60).
 - `PermissionRequest`: show `CODEX NEEDS YOU` with a distinct triple-ping.
   Rate-limited to once every eight seconds.
 

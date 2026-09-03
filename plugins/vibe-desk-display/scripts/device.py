@@ -6,6 +6,7 @@ stored with mode 0600 and can be redirected in tests with
 AUTONOMOUS_LCD_CONFIG_DIR.
 """
 
+import errno
 import json
 import os
 import re
@@ -23,6 +24,7 @@ LCD_PORT = 3000
 
 DEFAULTS = {
     "usage_threshold": 80,
+    "done_cooldown_seconds": 60,
     "sounds_enabled": True,
     "task_done_enabled": True,
     "notify_enabled": True,
@@ -88,6 +90,38 @@ def get_device(cfg, requested=None):
     return devices[0]
 
 
+_last_send_sandbox_blocked = False
+
+
+def is_sandbox_network_error(error):
+    """True when a send failed because this process cannot use the network.
+
+    Codex's turn sandbox runs skill scripts with ``network_access: false``.
+    The LAN POST then fails with EPERM/EACCES ("Operation not permitted")
+    even when the display is up. Hooks are not sandboxed.
+    """
+    current = error
+    seen = set()
+    while current is not None and id(current) not in seen:
+        if not isinstance(current, BaseException):
+            break
+        seen.add(id(current))
+        if getattr(current, "errno", None) in (errno.EPERM, errno.EACCES):
+            return True
+        if "operation not permitted" in str(current).lower():
+            return True
+        reason = getattr(current, "reason", None)
+        if isinstance(reason, BaseException) and id(reason) not in seen:
+            current = reason
+            continue
+        current = current.__cause__ or current.__context__
+    return False
+
+
+def last_send_blocked_by_sandbox():
+    return _last_send_sandbox_blocked
+
+
 def send_to_lcd(ip, device_id, payload, timeout=3):
     request = urllib.request.Request(
         "http://{}:{}/lcd".format(ip, LCD_PORT),
@@ -101,12 +135,15 @@ def send_to_lcd(ip, device_id, payload, timeout=3):
 
 
 def try_send(ip, device_id, payload, timeout=3):
+    global _last_send_sandbox_blocked
     if not ip or not device_id:
         return False
     try:
         send_to_lcd(ip, device_id, payload, timeout=timeout)
+        _last_send_sandbox_blocked = False
         return True
-    except Exception:
+    except Exception as error:
+        _last_send_sandbox_blocked = is_sandbox_network_error(error)
         return False
 
 

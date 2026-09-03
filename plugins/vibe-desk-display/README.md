@@ -24,7 +24,10 @@ codex plugin add vibe-desk-display@autonomous-desk
 ```
 
 Restart Codex or open a new task. In the CLI, run `/hooks`, review the two
-plugin hooks, and trust them. Then ask Codex:
+plugin hooks, and trust them. In the Codex app or IDE chat, `/hooks` is an
+ordinary message — run `codex` once in a terminal instead; trust persists in
+`~/.codex/config.toml` under `[hooks.state]` and applies everywhere after.
+Then ask Codex:
 
 ```text
 Pair my Autonomous Desk display.
