@@ -46,25 +46,40 @@ migrated=0
 
 # The plugin used to be called vibe-desk-display. It is a different plugin id,
 # so leaving it installed alongside the new one registers the Stop hook twice
-# and you get two cards and two buzzes per task.
-#
-# The removal is attempted unconditionally rather than gated on a listing:
-# `codex plugin list` stops showing a plugin once its marketplace entry is
-# replaced, yet the plugin stays registered in ~/.codex/config.toml and keeps
-# firing its hooks — invisible, but still buzzing. The exit status tells us
-# whether it was really there.
-remove_old() {
-  cli="$1"; sub="$2"; spec="$3"
-  if "$cli" plugin "$sub" "$spec" >/dev/null 2>&1; then
-    step "Removed the old $OLD_PLUGIN plugin ($cli)"
+# and you get two cards and two buzzes per finished task.
+
+remove_old_claude() {
+  # `claude plugin uninstall` fails when the plugin isn't installed, so its
+  # exit status is a reliable "was it there?".
+  if claude plugin uninstall "$OLD_PLUGIN" >/dev/null 2>&1; then
+    step "Removed the old $OLD_PLUGIN plugin (Claude Code)"
     migrated=1
+  fi
+}
+
+remove_old_codex() {
+  # `codex plugin remove` prints "Removed" and exits 0 even for a plugin that
+  # was never installed, so it cannot tell us anything. The registration in
+  # config.toml is authoritative — and it is also what survives when
+  # `codex plugin list` stops listing the plugin after its marketplace entry
+  # is replaced, leaving the hooks firing invisibly. Match any marketplace.
+  cfg="${CODEX_HOME:-$HOME/.codex}/config.toml"
+  [ -f "$cfg" ] || return 0
+  spec=$(grep -o "^\[plugins\.\"$OLD_PLUGIN@[^\"]*\"\]" "$cfg" 2>/dev/null \
+         | head -1 | sed 's/^\[plugins\."//; s/"\]$//')
+  [ -n "$spec" ] || return 0
+  step "Removing the old $OLD_PLUGIN plugin (Codex)"
+  if codex plugin remove "$spec" >/dev/null 2>&1; then
+    migrated=1
+  else
+    warn "Could not remove it. Run: codex plugin remove $spec"
   fi
 }
 
 # --- Claude Code -------------------------------------------------------------
 if [ "$WANT_CLAUDE" -eq 1 ] && command -v claude >/dev/null 2>&1; then
   step "Claude Code detected — installing $PLUGIN"
-  remove_old claude uninstall "$OLD_PLUGIN"
+  remove_old_claude
   # --sparse keeps the marketplace checkout to the plugin dirs, skipping the
   # CAD/STL/video payload in this repo. Fall back if the flag is unsupported.
   # Output is suppressed: for anyone who already has the marketplace, the
@@ -87,7 +102,7 @@ fi
 # --- Codex -------------------------------------------------------------------
 if [ "$WANT_CODEX" -eq 1 ] && command -v codex >/dev/null 2>&1; then
   step "Codex detected — installing $PLUGIN"
-  remove_old codex remove "$OLD_PLUGIN@$MARKETPLACE"
+  remove_old_codex
   codex plugin marketplace add "$REPO_URL" --sparse .agents --sparse software/codex >/dev/null 2>&1 \
     || codex plugin marketplace add "$REPO_URL" >/dev/null 2>&1 \
     || true
