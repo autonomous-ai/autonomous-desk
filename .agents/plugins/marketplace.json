@@ -1,0 +1,20 @@
+{
+  "name": "autonomous-desk",
+  "interface": {
+    "displayName": "Autonomous Desk"
+  },
+  "plugins": [
+    {
+      "name": "vibe-desk-display",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vibe-desk-display"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
