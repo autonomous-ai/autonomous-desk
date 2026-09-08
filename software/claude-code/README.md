@@ -4,17 +4,6 @@ Turn your [Thinking Desk](https://www.autonomous.ai/standing-desks/autonomous-de
 
 https://github.com/user-attachments/assets/c036cb38-f9d6-42e8-8b66-5a09e0e77de2
 
-> **Renamed:** this plugin used to be `vibe-desk-display`. If you have that
-> version installed, remove it first — otherwise the desk hook fires twice and
-> you get duplicate cards and buzzes:
->
-> ```bash
-> claude plugin uninstall vibe-desk-display
-> ```
->
-> Your paired display and settings carry over; only the slash-command prefix
-> changes to `/thinking-desk:`.
-
 ## Quick Start
 
 ```bash
@@ -94,6 +83,19 @@ claude plugins update thinking-desk@autonomous-desk
 Restart Claude Code after updating.
 
 > Note: the marketplace is named `autonomous-desk`, so the reference is `thinking-desk@autonomous-desk` (plugin@marketplace).
+
+## Already using `vibe-desk-display`?
+
+This plugin used to be called `vibe-desk-display`. If you still have that
+version installed, remove it — otherwise the desk hook fires twice and
+you get duplicate cards and buzzes:
+
+```bash
+claude plugin uninstall vibe-desk-display
+```
+
+Your paired display and settings carry over; only the slash-command prefix
+changes to `/thinking-desk:`.
 
 ## Uninstall
 

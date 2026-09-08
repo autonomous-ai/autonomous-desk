@@ -47,27 +47,6 @@ codex plugin add thinking-desk@autonomous-desk
 
 ---
 
-## Already using `vibe-desk-display`?
-
-The plugin was renamed to **`thinking-desk`**. Please **remove the old one** —
-it is a separate plugin id, so leaving it installed registers the desk hook
-twice and you get two cards and two buzzes for every finished task.
-
-The installer above removes it for you. To do it by hand:
-
-```bash
-claude plugin uninstall vibe-desk-display     # Claude Code
-codex plugin remove vibe-desk-display@autonomous-desk   # Codex
-```
-
-Your paired display, threshold, and settings live in `~/.config/autonomous-lcd.json`
-and are **not** tied to the plugin name — they carry over untouched, so you do not
-need to pair again. The only user-visible change is the slash commands:
-`/vibe-desk-display:usage` is now `/thinking-desk:usage` (same for `:insights`
-and `:notify`).
-
----
-
 ## Then: three steps
 
 **1. Restart your agent** — exit and reopen Claude Code / Codex.
@@ -145,6 +124,27 @@ All default to `true`.
 - A Thinking Desk display on the same Wi-Fi
 - Claude Code (OAuth login, not an API key) and/or a current Codex build with
   plugin + hook support
+
+---
+
+## Already using `vibe-desk-display`?
+
+The plugin was renamed to **`thinking-desk`**. Please **remove the old one** —
+it is a separate plugin id, so leaving it installed registers the desk hook
+twice and you get two cards and two buzzes for every finished task.
+
+The installer above removes it for you. To do it by hand:
+
+```bash
+claude plugin uninstall vibe-desk-display     # Claude Code
+codex plugin remove vibe-desk-display@autonomous-desk   # Codex
+```
+
+Your paired display, threshold, and settings live in `~/.config/autonomous-lcd.json`
+and are **not** tied to the plugin name — they carry over untouched, so you do not
+need to pair again. The only user-visible change is the slash commands:
+`/vibe-desk-display:usage` is now `/thinking-desk:usage` (same for `:insights`
+and `:notify`).
 
 ---
 

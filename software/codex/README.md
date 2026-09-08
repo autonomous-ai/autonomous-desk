@@ -4,17 +4,6 @@ Turn an [Autonomous Thinking Desk](https://www.autonomous.ai/standing-desks/auto
 into a live Codex companion. Completion notifications, approval pings, usage,
 and local builder insights appear directly on the desk display.
 
-> **Renamed:** this plugin used to be `vibe-desk-display`. If you have that
-> version installed, remove it first — otherwise the desk hook fires twice and
-> you get duplicate cards and buzzes:
->
-> ```bash
-> codex plugin remove vibe-desk-display@autonomous-desk
-> ```
->
-> Your paired display and settings carry over; only the slash-command prefix
-> changes to `/thinking-desk:`.
-
 ## Features
 
 - **Task complete** — `Codex Done` after a completed turn
@@ -48,6 +37,19 @@ After pairing, update the display firmware in the Thinking Desk mobile app.
 
 See [GUIDE.md](GUIDE.md) for settings, privacy details, local development, and
 troubleshooting.
+
+## Already using `vibe-desk-display`?
+
+This plugin used to be called `vibe-desk-display`. If you still have that
+version installed, remove it — otherwise the desk hook fires twice and
+you get duplicate cards and buzzes:
+
+```bash
+codex plugin remove vibe-desk-display@autonomous-desk
+```
+
+Your paired display and settings carry over; only the slash-command prefix
+changes to `/thinking-desk:`.
 
 ## Requirements
 
