@@ -235,7 +235,7 @@ Handled automatically by the `Stop` hook (`scripts/on-stop-done.py`). Every time
 3. If **either** 5-hour or 7-day utilization `>=` the configured threshold → sends usage section 1 (5-hour) after 5s, then usage section 2 (7-day) after another 5s.
 4. If both are below threshold → stops after Task Done.
 
-Rate-limited to once per 60 seconds. No action needed from Claude — the hook runs automatically.
+Rate-limited to once per 2 seconds. No action needed from Claude — the hook runs automatically.
 
 ### Waiting-on-you ping (`Notification` hook)
 

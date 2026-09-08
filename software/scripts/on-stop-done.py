@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hook: send Task Done notification to LCD when Claude stops.
 If usage >= threshold, also sends usage sections after a delay.
-Rate-limited to once per 60s."""
+Rate-limited to once per 2s."""
 
 import json
 import os
@@ -15,7 +15,7 @@ import discover  # same scripts/ dir — reconnect + warn_user helpers
 
 CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
 COOLDOWN_PATH = os.path.expanduser("~/.config/autonomous-lcd-done.last")
-COOLDOWN_SECONDS = 60
+COOLDOWN_SECONDS = 2
 DEFAULT_USAGE_THRESHOLD = 80
 LCD_PORT = 3000
 SECTION_DELAY = 5
