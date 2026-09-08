@@ -77,7 +77,10 @@ if [ "$WANT_CLAUDE" -eq 1 ] && command -v claude >/dev/null 2>&1; then
   # CAD/STL/video payload in this repo. Fall back if the flag is unsupported.
   claude plugin marketplace add "$REPO_URL" --sparse .claude-plugin software/claude-code \
     || claude plugin marketplace add "$REPO_URL" \
-    || warn "marketplace may already be configured — continuing"
+    || true
+  # `add` fails when the marketplace is already configured, and its cached
+  # manifest may predate the rename — refresh it or the plugin won't be found.
+  claude plugin marketplace update "$MARKETPLACE" >/dev/null 2>&1 || true
   if claude plugin install "$PLUGIN@$MARKETPLACE" -y; then
     installed_claude=1
   else
@@ -92,7 +95,9 @@ if [ "$WANT_CODEX" -eq 1 ] && command -v codex >/dev/null 2>&1; then
   remove_old codex remove
   codex plugin marketplace add "$REPO_URL" --sparse .agents --sparse software/codex \
     || codex plugin marketplace add "$REPO_URL" \
-    || warn "marketplace may already be configured — continuing"
+    || true
+  # Same as above: refresh a marketplace that was already configured.
+  codex plugin marketplace upgrade "$MARKETPLACE" >/dev/null 2>&1 || true
   if codex plugin add "$PLUGIN@$MARKETPLACE"; then
     installed_codex=1
   else
