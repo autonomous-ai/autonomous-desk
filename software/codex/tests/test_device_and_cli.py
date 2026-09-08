@@ -60,7 +60,7 @@ class DeviceAndCliTests(unittest.TestCase):
         self.assertEqual(mode, 0o600)
         loaded = device.load_config()
         self.assertEqual(loaded["usage_threshold"], 80)
-        self.assertEqual(loaded["done_cooldown_seconds"], 60)
+        self.assertEqual(loaded["done_cooldown_seconds"], 2)
 
     def test_markdown_is_flattened_and_limited(self):
         text = device.strip_markdown("# [Build](https://example.com) `passed` " + "x" * 600)

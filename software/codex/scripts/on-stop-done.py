@@ -13,7 +13,7 @@ import device
 
 COOLDOWN_PATH = os.path.join(device.CONFIG_DIR, "autonomous-lcd-codex-done.last")
 UPDATE_STATE_PATH = os.path.join(device.CONFIG_DIR, "autonomous-lcd-codex-update.json")
-COOLDOWN_SECONDS = 60  # default; override with done_cooldown_seconds
+COOLDOWN_SECONDS = 2  # default; override with done_cooldown_seconds
 SECTION_DELAY = float(os.environ.get("AUTONOMOUS_LCD_SECTION_DELAY", "5"))
 UPDATE_CHECK_INTERVAL = 24 * 3600
 PLUGIN_JSON_URL = (

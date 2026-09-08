@@ -366,7 +366,7 @@ def status(_args):
     print("Paired display: {}".format(selected.get("label", "My Display")))
     print("Sounds: {}".format("on" if cfg.get("sounds_enabled", True) else "off"))
     print("Usage threshold: {}%".format(cfg.get("usage_threshold", 80)))
-    print("Done cooldown: {}s".format(cfg.get("done_cooldown_seconds", 60)))
+    print("Done cooldown: {}s".format(cfg.get("done_cooldown_seconds", 2)))
     return 0
 
 

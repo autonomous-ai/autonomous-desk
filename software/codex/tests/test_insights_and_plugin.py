@@ -185,7 +185,7 @@ class InsightsAndPluginTests(unittest.TestCase):
                 on_stop_done.should_run(now=now, cooldown=on_stop_done.cooldown_seconds())
             )
             on_stop_done.device.save_config({"done_cooldown_seconds": "nope"})
-            self.assertEqual(on_stop_done.cooldown_seconds(), 60)
+            self.assertEqual(on_stop_done.cooldown_seconds(), 2)
         finally:
             on_stop_done.device.CONFIG_DIR = old_dir
             on_stop_done.device.CONFIG_PATH = old_path

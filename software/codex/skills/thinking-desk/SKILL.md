@@ -111,7 +111,7 @@ The bundled hooks do the following after the user trusts them in `/hooks`:
 
 - `Stop`: show `Codex Done`, then show account usage cards when a local rate
   limit reaches the configured threshold. Rate-limited by
-  `done_cooldown_seconds` (default 60).
+  `done_cooldown_seconds` (default 2).
 - `PermissionRequest`: show `CODEX NEEDS YOU` with a distinct triple-ping.
   Rate-limited to once every eight seconds.
 

@@ -24,7 +24,7 @@ LCD_PORT = 3000
 
 DEFAULTS = {
     "usage_threshold": 80,
-    "done_cooldown_seconds": 60,
+    "done_cooldown_seconds": 2,
     "sounds_enabled": True,
     "task_done_enabled": True,
     "notify_enabled": True,

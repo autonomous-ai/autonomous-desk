@@ -57,7 +57,7 @@ mobile app.
 ## What happens next
 
 The `Stop` hook sends a `Codex Done` card after each completed turn, limited to
-once per `done_cooldown_seconds` (60 by default). If an available account
+once per `done_cooldown_seconds` (2 by default). If an available account
 rate-limit window reaches the usage threshold (80% by default), up to two
 usage cards follow.
 
@@ -105,7 +105,7 @@ location used by the Claude Code plugin. This lets one paired display work with
 both integrations. Settings also apply to both unless a setting is specific to
 one plugin.
 
-`done_cooldown_seconds` (default 60) is the minimum time between `Codex Done`
+`done_cooldown_seconds` (default 2) is the minimum time between `Codex Done`
 cards. Turns inside that window are skipped so back-to-back chat does not look
 like a missed delivery. Set it to `0` to send after every turn.
 
