@@ -92,7 +92,11 @@ Only show simple, non-technical messages to the user during pairing:
 3. If no devices found → tell user: "No devices found. Make sure your display is powered on and connected to the same WiFi."
 4. Tell user: **"Found N device(s). Check your display for a pairing code."**
 5. For each discovered device, generate a random **4-digit code** (1000–9999, unique per device).
-6. Send each device its code as a notification (silently, don't show HTTP results to user):
+6. Send each device its code as a notification, using the request in **section 4.3**
+   — the `X-Device-ID` header is required and the display answers **403** without it.
+   Do this silently; don't show HTTP results to the user. Alternatively just run
+   `python3 scripts/pair.py start` and `python3 scripts/pair.py complete <code>`,
+   which handle steps 2 and 5–10 for you. Payload:
    ```json
    {
      "play_sound": 20,

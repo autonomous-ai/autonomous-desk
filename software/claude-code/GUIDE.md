@@ -38,6 +38,11 @@ Then **restart Claude Code** (exit and reopen).
 
 ## Pair your device
 
+> **You only pair once.** Both plugins read the same
+> `~/.config/autonomous-lcd.json`, so a display paired with one agent is
+> already available to the other — and `install.sh` may have paired it for you
+> during install. Skip this step if the display already works.
+
 1. Make sure your Thinking Desk is set up and connected to the same WiFi as your computer
 2. Open Claude Code and type:
 
@@ -50,6 +55,9 @@ pair my display
 5. Type that code into Claude Code
 
 That's it — your device is paired.
+
+Prefer a script? `python3 scripts/pair.py start`, then
+`python3 scripts/pair.py complete <code>`.
 
 > **Update your firmware.** After connecting your desk, open the Thinking Desk mobile app and update the firmware to the latest version — this ensures the display renders notifications correctly.
 

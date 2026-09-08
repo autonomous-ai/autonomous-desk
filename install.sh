@@ -128,6 +128,49 @@ if [ "$installed_claude" -eq 0 ] && [ "$installed_codex" -eq 0 ]; then
   exit 1
 fi
 
+# --- Pair --------------------------------------------------------------------
+# Prefer the Claude plugin's pair.py; fall back to the Codex CLI, which has had
+# the same two subcommands all along under different names.
+paired=0
+newest() { ls -td $1 2>/dev/null | head -1; }
+
+pair_now() {
+  # `curl | sh` leaves stdin pointing at the script itself, so a plain `read`
+  # sees EOF. Talk to the terminal directly, and skip entirely when there
+  # isn't one (CI, a pipe, a non-interactive shell).
+  [ -r /dev/tty ] || return 1
+
+  if [ "$installed_claude" -eq 1 ]; then
+    script=$(newest "$HOME/.claude/plugins/cache/*/$PLUGIN/*/scripts/pair.py")
+    start="start"; complete="complete"; status="status"
+  elif [ "$installed_codex" -eq 1 ]; then
+    script=$(newest "$HOME/.codex/plugins/cache/*/$PLUGIN/*/scripts/desk_display.py")
+    start="pair-start"; complete="pair-complete"; status=""
+  fi
+  [ -n "${script:-}" ] && [ -f "$script" ] || return 1
+
+  # Already paired? The config is shared between both agents, so one pairing
+  # covers Claude Code and Codex.
+  if [ -n "$status" ] && python3 "$script" "$status" >/dev/null 2>&1; then
+    say ""
+    step "A display is already paired — reusing it."
+    paired=1
+    return 0
+  fi
+
+  say ""
+  step "Pairing your display"
+  python3 "$script" "$start" || return 1
+
+  printf '    Enter the 4-digit code (or press Enter to skip): '
+  read -r code < /dev/tty || return 1
+  [ -n "$code" ] || return 1
+  python3 "$script" "$complete" "$code" || return 1
+  paired=1
+}
+
+pair_now || true
+
 # --- Next steps --------------------------------------------------------------
 say ""
 step "Installed. Three things left:"
@@ -141,9 +184,16 @@ if [ "$installed_codex" -eq 1 ]; then
   say "     run ${B}codex${R} once in a terminal instead. Trust is saved to"
   say "     ${D}~/.codex/config.toml${R} and applies everywhere after."
 fi
-say ""
-say "  ${B}3.${R} Put your desk on the same Wi-Fi, then say: ${B}pair my display${R}"
-say "     A 4-digit code appears on the display — type it back."
+if [ "$paired" -eq 1 ]; then
+  say ""
+  say "  ${B}3.${R} Your display is paired — nothing else to do. One pairing serves"
+  say "     both Claude Code and Codex."
+else
+  say ""
+  say "  ${B}3.${R} Put your desk on the same Wi-Fi, then say: ${B}pair my display${R}"
+  say "     A 4-digit code appears on the display — type it back. You only pair"
+  say "     once; both agents share it."
+fi
 say ""
 if [ "$migrated" -eq 1 ]; then
   say ""

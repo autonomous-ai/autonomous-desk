@@ -38,6 +38,11 @@ An administrator can also restrict hooks through managed Codex policy.
 
 ## 3. Pair the display
 
+> **You only pair once.** Both plugins read the same
+> `~/.config/autonomous-lcd.json`, so a display paired with one agent is
+> already available to the other — and `install.sh` may have paired it for you
+> during install. Skip this step if the display already works.
+
 Ask Codex:
 
 ```text

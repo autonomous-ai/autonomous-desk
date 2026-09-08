@@ -78,14 +78,16 @@ chat, `/hooks` is just an ordinary message and won't open the trust prompt — r
 `codex` once in a terminal instead. Trust is saved to `~/.codex/config.toml` under
 `[hooks.state]` and applies everywhere after that.
 
-**3. Pair the display.** Make sure the desk is on the same Wi-Fi, then type:
+**3. Pair the display** — once, for both agents. The installer offers to do it
+for you; if you skipped that, make sure the desk is on the same Wi-Fi and type:
 
 ```text
 pair my display
 ```
 
 Your agent scans the LAN, a **4-digit code** appears on the display, you type it back.
-Done.
+Done. Both plugins share `~/.config/autonomous-lcd.json`, so pairing with one agent
+also pairs it for the other — you never do this twice.
 
 > **Update your desk firmware** afterwards, via the Thinking Desk mobile app — older
 > firmware renders the notification cards incorrectly.
