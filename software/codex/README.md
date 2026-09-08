@@ -9,7 +9,7 @@ and local builder insights appear directly on the desk display.
 > you get duplicate cards and buzzes:
 >
 > ```bash
-> codex plugin remove vibe-desk-display
+> codex plugin remove vibe-desk-display@autonomous-desk
 > ```
 >
 > Your paired display and settings carry over; only the slash-command prefix

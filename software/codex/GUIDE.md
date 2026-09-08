@@ -7,7 +7,7 @@
 > cards and buzzes. Pairing and settings carry over.
 >
 > ```bash
-> codex plugin remove vibe-desk-display
+> codex plugin remove vibe-desk-display@autonomous-desk
 > ```
 
 ```bash
@@ -140,7 +140,7 @@ python3 -m unittest discover -s software/codex/tests -v
 ## Uninstall
 
 ```bash
-codex plugin remove thinking-desk
+codex plugin remove thinking-desk@autonomous-desk
 ```
 
 Removing the plugin leaves the paired-device configuration in place so the

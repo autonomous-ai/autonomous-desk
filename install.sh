@@ -46,37 +46,32 @@ migrated=0
 
 # The plugin used to be called vibe-desk-display. It is a different plugin id,
 # so leaving it installed alongside the new one registers the Stop hook twice
-# and you get two cards and two buzzes per task. Remove it first.
-old_is_installed() {
-  case "$1" in
-    # codex lists every plugin its marketplaces offer, including ones marked
-    # "not installed" — match the row and exclude that state.
-    codex) codex plugin list 2>/dev/null | grep "^$OLD_PLUGIN@" | grep -qv "not installed" ;;
-    # claude lists installed plugins only.
-    *)     claude plugin list 2>/dev/null | grep -q "$OLD_PLUGIN" ;;
-  esac
-}
-
+# and you get two cards and two buzzes per task.
+#
+# The removal is attempted unconditionally rather than gated on a listing:
+# `codex plugin list` stops showing a plugin once its marketplace entry is
+# replaced, yet the plugin stays registered in ~/.codex/config.toml and keeps
+# firing its hooks — invisible, but still buzzing. The exit status tells us
+# whether it was really there.
 remove_old() {
-  cli="$1"; sub="$2"
-  if old_is_installed "$cli"; then
-    step "Removing the old $OLD_PLUGIN plugin ($cli)"
-    if "$cli" plugin "$sub" "$OLD_PLUGIN" >/dev/null 2>&1; then
-      migrated=1
-    else
-      warn "Could not remove it automatically. Run: $cli plugin $sub $OLD_PLUGIN"
-    fi
+  cli="$1"; sub="$2"; spec="$3"
+  if "$cli" plugin "$sub" "$spec" >/dev/null 2>&1; then
+    step "Removed the old $OLD_PLUGIN plugin ($cli)"
+    migrated=1
   fi
 }
 
 # --- Claude Code -------------------------------------------------------------
 if [ "$WANT_CLAUDE" -eq 1 ] && command -v claude >/dev/null 2>&1; then
   step "Claude Code detected — installing $PLUGIN"
-  remove_old claude uninstall
+  remove_old claude uninstall "$OLD_PLUGIN"
   # --sparse keeps the marketplace checkout to the plugin dirs, skipping the
   # CAD/STL/video payload in this repo. Fall back if the flag is unsupported.
-  claude plugin marketplace add "$REPO_URL" --sparse .claude-plugin software/claude-code \
-    || claude plugin marketplace add "$REPO_URL" \
+  # Output is suppressed: for anyone who already has the marketplace, the
+  # --sparse attempt fails loudly ("network source differs...") even though the
+  # fallback below is fine. A genuine problem still surfaces at install time.
+  claude plugin marketplace add "$REPO_URL" --sparse .claude-plugin software/claude-code >/dev/null 2>&1 \
+    || claude plugin marketplace add "$REPO_URL" >/dev/null 2>&1 \
     || true
   # `add` fails when the marketplace is already configured, and its cached
   # manifest may predate the rename — refresh it or the plugin won't be found.
@@ -92,9 +87,9 @@ fi
 # --- Codex -------------------------------------------------------------------
 if [ "$WANT_CODEX" -eq 1 ] && command -v codex >/dev/null 2>&1; then
   step "Codex detected — installing $PLUGIN"
-  remove_old codex remove
-  codex plugin marketplace add "$REPO_URL" --sparse .agents --sparse software/codex \
-    || codex plugin marketplace add "$REPO_URL" \
+  remove_old codex remove "$OLD_PLUGIN@$MARKETPLACE"
+  codex plugin marketplace add "$REPO_URL" --sparse .agents --sparse software/codex >/dev/null 2>&1 \
+    || codex plugin marketplace add "$REPO_URL" >/dev/null 2>&1 \
     || true
   # Same as above: refresh a marketplace that was already configured.
   codex plugin marketplace upgrade "$MARKETPLACE" >/dev/null 2>&1 || true

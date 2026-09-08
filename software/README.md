@@ -57,7 +57,7 @@ The installer above removes it for you. To do it by hand:
 
 ```bash
 claude plugin uninstall vibe-desk-display     # Claude Code
-codex plugin remove vibe-desk-display         # Codex
+codex plugin remove vibe-desk-display@autonomous-desk   # Codex
 ```
 
 Your paired display, threshold, and settings live in `~/.config/autonomous-lcd.json`
