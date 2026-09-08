@@ -98,7 +98,9 @@ class InsightsAndPluginTests(unittest.TestCase):
             manifest = json.load(handle)
         with open(os.path.join(PLUGIN_ROOT, "hooks", "hooks.json"), encoding="utf-8") as handle:
             hooks = json.load(handle)["hooks"]
-        self.assertEqual(manifest["name"], os.path.basename(PLUGIN_ROOT))
+        # The plugin name is fixed; it is intentionally not tied to the
+        # directory name (this package lives at software/codex/).
+        self.assertEqual(manifest["name"], "vibe-desk-display")
         self.assertIn("Stop", hooks)
         self.assertIn("PermissionRequest", hooks)
         self.assertNotIn("Notification", hooks)

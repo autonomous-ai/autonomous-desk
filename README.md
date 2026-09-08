@@ -36,21 +36,29 @@ bom/            Full bill of materials (all parts, prices, links)
 tools/          Scripts, helper tools
 examples/       Example usage, demo code
 
-software/       Claude Code desk-display plugin
-plugins/        Codex desk-display plugin
+software/       Desk-display plugins for AI coding agents
+  claude-code/  Claude Code plugin
+  codex/        Codex plugin
 ```
 
 ## AI Coding Agent Display
 
-Connect the Thinking Desk display to your coding agent:
+Connect the Thinking Desk display to **Claude Code** or **Codex** — task-done
+notifications, approval pings, and usage on your desk, no dashboard needed.
 
-- [Claude Code setup](software/README.md)
-- [Codex setup](plugins/vibe-desk-display/README.md)
+```bash
+curl -fsSL https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/install.sh | sh
+```
+
+The installer detects which agent CLIs you have and installs for each. Then
+restart your agent and say `pair my display`.
 
 Both integrations support OTP pairing, completion notifications, approval
 pings, account usage, local builder insights, and automatic LAN reconnect.
 They share the paired-device configuration, so the same display can work with
 Claude Code and Codex on one Mac.
+
+Full setup, settings, and troubleshooting: **[software/](software/README.md)**
 
 ## Big Files: Git LFS
 

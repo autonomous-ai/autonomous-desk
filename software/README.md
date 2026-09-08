@@ -1,91 +1,154 @@
-# Autonomous Thinking Desk Display for Claude Code
+# Autonomous Thinking Desk Display
 
-Turn your [Thinking Desk](https://www.autonomous.ai/standing-desks/autonomous-desk-5-ai) into a live Claude Code companion. Task-done notifications and usage data appear on your desk display — no dashboard, no browser, just a glance.
+Turn your [Thinking Desk](https://www.autonomous.ai/standing-desks/autonomous-desk-5-ai)
+into a live companion for your AI coding agent. Task-done notifications, approval
+pings, and usage appear on the desk display — no dashboard, no browser, just a glance.
+
+Works with **Claude Code** and **Codex**. Install one or both; they share the same
+paired display and the same config file, so one desk serves both agents on one Mac.
 
 https://github.com/user-attachments/assets/c036cb38-f9d6-42e8-8b66-5a09e0e77de2
 
-## Quick Start
+---
+
+## Install
+
+One command — it detects which agent CLIs you have and installs for each:
 
 ```bash
-claude plugins marketplace add https://github.com/autonomous-ai/autonomous-desk
-claude plugins install vibe-desk-display
+curl -fsSL https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/install.sh | sh
 ```
 
-Restart Claude Code, then type `pair my display` and follow the on-screen instructions.
+Prefer to read before you run? Download it first:
 
-> **After connecting your desk, update the firmware to the latest version** (via the Thinking Desk mobile app) to make sure the display works correctly.
+```bash
+curl -fsSL https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/install.sh -o install.sh
+less install.sh && sh install.sh
+```
 
-See the full [Setup Guide](GUIDE.md) for details.
+<details>
+<summary>Or install by hand</summary>
 
-## Features
+**Claude Code**
 
-- **Task done + usage display** — when Claude completes a task, shows a "Task Done" notification followed by 5-hour and 7-day usage
-- **Waiting-on-you ping** — when Claude needs your approval (a yes/no prompt or an MCP form), the display pings with a distinct buzzer (triple_ping) so you don't miss it while away from the keyboard. Idle "waiting for your next prompt" notices are ignored, so it only fires when there's actually something to act on
-- **Builder insights** — analyze your local Claude Code sessions on-device and rotate a builder profile (archetype, peak hour, top model, go-to prompt, style) across the display. Everything is computed locally — nothing leaves your machine
-- **Notifications** — send custom messages to the screen ("notify my display when done")
-- **OTP pairing** — no sticker reading, just enter the code shown on screen
-- **Auto-reconnect** — if your router hands the display a new IP, the hooks rescan the LAN, update the saved address, and retry; if it still can't be reached they warn you right in Claude
-- **Zero dependencies** — Python 3 stdlib only, no pip install needed
+```bash
+claude plugin marketplace add https://github.com/autonomous-ai/autonomous-desk
+claude plugin install vibe-desk-display@autonomous-desk
+```
 
-## Commands
+**Codex**
 
-| Command | Description |
-|---------|-------------|
-| `/vibe-desk-display:usage` | Refresh usage display now |
-| `/vibe-desk-display:insights` | Analyze local sessions, rotate builder profile on display |
-| `/vibe-desk-display:notify` | Send a notification |
+```bash
+codex plugin marketplace add https://github.com/autonomous-ai/autonomous-desk
+codex plugin add vibe-desk-display@autonomous-desk
+```
 
-Or use natural language: "show my usage on display", "notify my display", "unpair my display"
+</details>
 
-## Turning notifications on/off
+---
 
-You don't always want the buzzer. Just tell Claude in plain language — it edits `~/.config/autonomous-lcd.json` for you (no restart needed):
+## Then: three steps
 
-- "mute the display" → keep the cards, silence the buzzer
-- "stop the task done notification" → no more "Task Done" card
-- "stop pinging me for approval" → no more "Claude needs you" ping
-- "turn everything back on" → re-enable all
+**1. Restart your agent** — exit and reopen Claude Code / Codex.
 
-The flags (all default `true`):
+**2. Codex only — trust the hooks.** Run `/hooks` in the Codex **CLI**, then review
+and trust the plugin's `Stop` and `PermissionRequest` hooks. In the Codex app or IDE
+chat, `/hooks` is just an ordinary message and won't open the trust prompt — run
+`codex` once in a terminal instead. Trust is saved to `~/.codex/config.toml` under
+`[hooks.state]` and applies everywhere after that.
+
+**3. Pair the display.** Make sure the desk is on the same Wi-Fi, then type:
+
+```text
+pair my display
+```
+
+Your agent scans the LAN, a **4-digit code** appears on the display, you type it back.
+Done.
+
+> **Update your desk firmware** afterwards, via the Thinking Desk mobile app — older
+> firmware renders the notification cards incorrectly.
+
+---
+
+## What it does
+
+| | |
+|---|---|
+| **Task done** | A card the moment your agent finishes a turn |
+| **Waiting on you** | A distinct card + triple-ping buzzer when the agent needs approval, so you don't miss it away from the keyboard |
+| **Account usage** | Your remaining usage windows and reset times, shown when you cross a threshold (80% by default) |
+| **Builder insights** | A profile computed from your local sessions — archetype, peak hour, top model, go-to prompt — rotated across the display as ambient cards |
+| **Custom notifications** | "notify my display when the build is done" |
+| **OTP pairing** | No sticker reading — just the code on screen |
+| **Auto-reconnect** | If your router hands the display a new IP, the plugin rescans the LAN and updates the saved address |
+| **Zero dependencies** | Python 3 standard library only, no `pip install` |
+
+---
+
+## Privacy
+
+Nothing leaves your machine except two things: the call your agent already makes to
+its own provider for usage, and a LAN request to your display at
+`http://<device_ip>:3000`. Builder insights are computed locally from session files
+on disk and are never uploaded. The plugin does not read your credentials.
+
+---
+
+## Turning things on and off
+
+Both plugins read `~/.config/autonomous-lcd.json`. You don't have to edit it — just
+say what you want in plain language ("mute the display", "stop pinging me for
+approval", "warn me earlier", "turn everything back on") and your agent updates it.
+No restart needed.
 
 | Key | Controls |
 |-----|----------|
 | `sounds_enabled` | Master buzzer. `false` = cards show silently |
-| `task_done_enabled` | The "Task Done" card after each response |
-| `notify_enabled` | The waiting-on-you ping (tool approval / MCP form) |
-| `update_check_enabled` | The silent "Update available" card (≤ once/day) |
-| `device_warning_enabled` | The in-Claude warning when the display can't be reached |
+| `task_done_enabled` | The task-done card after each response |
+| `notify_enabled` | The waiting-on-you approval ping |
+| `update_check_enabled` | The silent "Update available" card (at most once a day) |
+| `device_warning_enabled` | The in-agent warning when the display can't be reached |
+| `done_cooldown_seconds` | Minimum gap between task-done cards |
+
+All default to `true`.
+
+---
 
 ## Requirements
 
 - macOS
-- Python 3
-- A Thinking Desk device on the same WiFi
-- Claude Code with OAuth login
+- Python 3.9 or newer
+- A Thinking Desk display on the same Wi-Fi
+- Claude Code (OAuth login, not an API key) and/or a current Codex build with
+  plugin + hook support
 
-## Update
+---
 
-The plugin does **not** update itself when you restart Claude Code. You get new versions one of two ways:
+## Full guides
 
-**Auto-update (recommended)** — turn it on once, then every new version installs on the next launch:
+| | Setup guide | Plugin |
+|---|---|---|
+| **Claude Code** | [claude-code/GUIDE.md](claude-code/GUIDE.md) | [`software/claude-code/`](claude-code/) |
+| **Codex** | [codex/GUIDE.md](codex/GUIDE.md) | [`software/codex/`](codex/) |
+
+Each guide covers settings, troubleshooting, local development, updating, and
+uninstalling for that agent.
+
+---
+
+## Layout
 
 ```
-/plugin
-→ Marketplaces → autonomous-desk → Enable auto-update
+software/
+├── claude-code/    Claude Code plugin (commands, hooks, scripts)
+└── codex/          Codex plugin (skill, hooks, scripts, tests)
 ```
 
-**Manual** — pull the latest right now:
+Two separate packages on purpose: each agent CLI installs only its own directory,
+so neither ships the other's code to your machine.
 
-```bash
-claude plugins update vibe-desk-display@autonomous-desk
-```
+## License
 
-Restart Claude Code after updating.
-
-> Note: the marketplace is named `autonomous-desk`, so the reference is `vibe-desk-display@autonomous-desk` (plugin@marketplace).
-
-## Uninstall
-
-```bash
-claude plugins uninstall vibe-desk-display
-```
+Code is [PolyForm Noncommercial 1.0.0](../LICENSE-CODE). See [LICENSE.md](../LICENSE.md)
+for the plain-English summary.

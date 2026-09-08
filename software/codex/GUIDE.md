@@ -125,8 +125,8 @@ After changing the plugin, reinstall it and start a new task. Validate the
 plugin and run the tests before distribution:
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py plugins/vibe-desk-display
-python3 -m unittest discover -s plugins/vibe-desk-display/tests -v
+python3 /path/to/plugin-creator/scripts/validate_plugin.py software/codex
+python3 -m unittest discover -s software/codex/tests -v
 ```
 
 ## Uninstall

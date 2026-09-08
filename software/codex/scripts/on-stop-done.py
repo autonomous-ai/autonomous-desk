@@ -18,7 +18,7 @@ SECTION_DELAY = float(os.environ.get("AUTONOMOUS_LCD_SECTION_DELAY", "5"))
 UPDATE_CHECK_INTERVAL = 24 * 3600
 PLUGIN_JSON_URL = (
     "https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/"
-    "main/plugins/vibe-desk-display/.codex-plugin/plugin.json"
+    "main/software/codex/.codex-plugin/plugin.json"
 )
 
 

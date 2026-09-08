@@ -5,19 +5,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 **Autonomous Desk** — an open-hardware "Thinking Desk" with an LCD, plus its software:
-a **Claude Code plugin** named `vibe-desk-display` (in `software/`). The plugin shows
-task-done + Anthropic usage % on the desk LCD, buzzes when Claude needs approval/input,
-and analyzes local Claude Code sessions into a "builder profile". Nothing leaves the
-machine except calls to the Anthropic API (OAuth usage) and a LAN `HTTP POST
+two sibling `vibe-desk-display` plugins (in `software/`) — one for **Claude Code**,
+one for **Codex**. Each shows task-done + account usage % on the desk LCD, buzzes when
+its agent needs approval/input, and analyzes that agent's local sessions into a
+"builder profile". Nothing leaves the machine except the agent's own usage call
+(Anthropic OAuth for Claude Code; local session files for Codex) and a LAN `HTTP POST
 http://<device_ip>:3000/lcd` to the desk firmware (`sds-firmware-desk-ai`); device
 discovery is via mDNS/UDP. This repo is **independent** of the SDS e-commerce backend
 (no shared-protos / BFF / ecm-sds).
 
 ## Repo Layout
 
-- `software/` — the `vibe-desk-display` Claude Code plugin: `plugin.json`, `hooks/`
-  (Stop/Notification), `commands/`, `scripts/`. Python 3 stdlib only (zero deps), macOS.
-  See `software/GUIDE.md`, `software/SKILL.md`, `software/README.md`.
+- `software/` — the two agent plugins. `software/README.md` is the **public landing
+  page** for both (the autonomous.ai product page links straight to
+  `/tree/main/software`, so keep that path and that file intact).
+  - `software/claude-code/` — Claude Code plugin: `plugin.json`, `.claude-plugin/`,
+    `hooks/` (Stop/Notification), `commands/`, `scripts/`. See its `GUIDE.md`, `SKILL.md`.
+  - `software/codex/` — Codex plugin: `.codex-plugin/plugin.json`, `hooks/`
+    (Stop/PermissionRequest), `skills/`, `scripts/`, `tests/`. See its `GUIDE.md`.
+  - Both are Python 3 stdlib only (zero deps), macOS.
+  - They are **separate packages on purpose**: each CLI installs only its own
+    directory, so neither ships the other's code. Shared-looking files
+    (`discover.py`, `insights.py`, `on-stop-done.py`) have diverged and are *not*
+    a single source — change one, decide consciously about the other.
+- `install.sh` (repo root) — one-command installer; detects `claude` / `codex` on
+  PATH and installs for each.
+- Marketplace manifests live at the repo root and hardcode plugin paths:
+  `.claude-plugin/marketplace.json` (`software/claude-code`) and
+  `.agents/plugins/marketplace.json` (`./software/codex`). Both `on-stop-done.py`
+  files also hardcode a raw.githubusercontent URL for the update check. **Moving a
+  plugin directory means updating all of these.**
 - `cad/`, `electronics/`, `bom/`, `assembly/`, `firmware/` — open hardware (CAD/PCB/BOM/build).
 - `docs/` — extra guides.
 

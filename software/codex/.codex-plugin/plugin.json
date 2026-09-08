@@ -6,7 +6,7 @@
     "name": "Autonomous",
     "url": "https://www.autonomous.ai/"
   },
-  "homepage": "https://github.com/autonomous-ai/autonomous-desk/tree/main/plugins/vibe-desk-display",
+  "homepage": "https://github.com/autonomous-ai/autonomous-desk/tree/main/software/codex",
   "repository": "https://github.com/autonomous-ai/autonomous-desk",
   "license": "PolyForm-Noncommercial-1.0.0",
   "keywords": ["codex", "desk", "display", "notifications", "usage"],

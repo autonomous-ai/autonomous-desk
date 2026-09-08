@@ -25,7 +25,7 @@ SECTION_DELAY = 5
 UPDATE_STATE_PATH = os.path.expanduser("~/.config/autonomous-lcd-update.json")
 UPDATE_CHECK_INTERVAL = 24 * 3600
 PLUGIN_JSON_URL = (
-    "https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/software/plugin.json"
+    "https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/software/claude-code/plugin.json"
 )
 
 

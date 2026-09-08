@@ -12,7 +12,7 @@
       "source": {
         "source": "git-subdir",
         "url": "https://github.com/autonomous-ai/autonomous-desk",
-        "path": "software"
+        "path": "software/claude-code"
       }
     }
   ]

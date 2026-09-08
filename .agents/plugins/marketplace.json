@@ -8,7 +8,7 @@
       "name": "vibe-desk-display",
       "source": {
         "source": "local",
-        "path": "./plugins/vibe-desk-display"
+        "path": "./software/codex"
       },
       "policy": {
         "installation": "AVAILABLE",
