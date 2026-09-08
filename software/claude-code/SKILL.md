@@ -199,7 +199,9 @@ When `items[]` has at least one valid item, rich layout is used and `text` is ig
 ```python
 import json, urllib.request
 
-payload = json.dumps(<json_payload>).encode()
+# Tag the card with the sending agent — the firmware ignores unknown keys on
+# older builds, and newer firmware forwards it to the backend.
+payload = json.dumps({**<json_payload>, "source": "claude-code"}).encode()
 req = urllib.request.Request(
     "http://<last_known_ip>:3000/lcd",
     data=payload,

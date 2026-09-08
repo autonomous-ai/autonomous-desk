@@ -28,6 +28,7 @@ CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
 CACHE_PATH = os.path.expanduser("~/.config/autonomous-lcd-insights.json")
 CACHE_TTL = 3600  # recompute the profile at most once an hour
 LCD_PORT = 3000
+SOURCE = "claude-code"
 CARD_DELAY = 6  # seconds between rotating cards
 
 EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
@@ -458,6 +459,13 @@ def load_device():
 
 
 def send_to_lcd(ip, device_id, payload):
+    # Tag every card with the agent that sent it. The firmware ignores
+    # unknown JSON keys, so this is safe on displays running older
+    # firmware; newer firmware forwards it so the backend can tell a
+    # Claude Code desk from a Codex one. setdefault, so a caller that
+    # sets its own source wins.
+    payload = dict(payload)
+    payload.setdefault("source", SOURCE)
     req = urllib.request.Request(
         f"http://{ip}:{LCD_PORT}/lcd",
         data=json.dumps(payload).encode(),

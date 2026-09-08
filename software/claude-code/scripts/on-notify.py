@@ -22,6 +22,7 @@ CONFIG_PATH = os.path.expanduser("~/.config/autonomous-lcd.json")
 COOLDOWN_PATH = os.path.expanduser("~/.config/autonomous-lcd-notify.last")
 COOLDOWN_SECONDS = 8
 LCD_PORT = 3000
+SOURCE = "claude-code"
 NOTIFY_SOUND = 1  # triple_ping — deliberately different from Task Done (#20)
 
 ACCENT = "#d4845a"  # orange — "CLAUDE"
@@ -64,6 +65,13 @@ def mark_ran():
 
 
 def send_to_lcd(ip, device_id, payload):
+    # Tag every card with the agent that sent it. The firmware ignores
+    # unknown JSON keys, so this is safe on displays running older
+    # firmware; newer firmware forwards it so the backend can tell a
+    # Claude Code desk from a Codex one. setdefault, so a caller that
+    # sets its own source wins.
+    payload = dict(payload)
+    payload.setdefault("source", SOURCE)
     req = urllib.request.Request(
         f"http://{ip}:{LCD_PORT}/lcd",
         data=json.dumps(payload).encode(),

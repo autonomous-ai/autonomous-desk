@@ -14,6 +14,7 @@ INSIGHT_IDX_PATH = os.path.expanduser("~/.config/autonomous-lcd-insights.idx")
 INSIGHTS_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "insights.py")
 LOG_PREFIX = "lcd-daemon"
 LCD_PORT = 3000
+SOURCE = "claude-code"
 SEND_DELAY = 7
 
 
@@ -133,6 +134,13 @@ def build_section2(pct_7d, reset_7d, sound=0):
 
 
 def send_to_lcd(ip, device_id, payload):
+    # Tag every card with the agent that sent it. The firmware ignores
+    # unknown JSON keys, so this is safe on displays running older
+    # firmware; newer firmware forwards it so the backend can tell a
+    # Claude Code desk from a Codex one. setdefault, so a caller that
+    # sets its own source wins.
+    payload = dict(payload)
+    payload.setdefault("source", SOURCE)
     req = urllib.request.Request(
         f"http://{ip}:{LCD_PORT}/lcd",
         data=json.dumps(payload).encode(),

@@ -21,6 +21,7 @@ CONFIG_DIR = os.path.expanduser(
 CONFIG_PATH = os.path.join(CONFIG_DIR, "autonomous-lcd.json")
 PAIRING_PATH = os.path.join(CONFIG_DIR, "autonomous-lcd-pairing.json")
 LCD_PORT = 3000
+SOURCE = "codex"
 
 DEFAULTS = {
     "usage_threshold": 80,
@@ -123,6 +124,13 @@ def last_send_blocked_by_sandbox():
 
 
 def send_to_lcd(ip, device_id, payload, timeout=3):
+    # Tag every card with the agent that sent it. The firmware ignores
+    # unknown JSON keys, so this is safe on displays running older
+    # firmware; newer firmware forwards it so the backend can tell a
+    # Claude Code desk from a Codex one. setdefault, so a caller that
+    # sets its own source wins.
+    payload = dict(payload)
+    payload.setdefault("source", SOURCE)
     request = urllib.request.Request(
         "http://{}:{}/lcd".format(ip, LCD_PORT),
         data=json.dumps(payload).encode("utf-8"),
