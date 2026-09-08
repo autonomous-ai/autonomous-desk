@@ -1,5 +1,5 @@
 ---
-name: vibe-desk-display
+name: thinking-desk
 description: Pair and control an Autonomous Thinking Desk display from Codex. Use for desk-display pairing, custom notifications, Codex usage, builder insights, notification settings, status, or unpairing.
 ---
 

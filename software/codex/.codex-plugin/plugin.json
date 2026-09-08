@@ -1,6 +1,6 @@
 {
-  "name": "vibe-desk-display",
-  "version": "0.1.0",
+  "name": "thinking-desk",
+  "version": "0.2.0",
   "description": "Connect Codex notifications, approvals, usage, and local builder insights to an Autonomous Thinking Desk display.",
   "author": {
     "name": "Autonomous",

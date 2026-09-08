@@ -53,6 +53,10 @@ curl -fsSL https://raw.githubusercontent.com/autonomous-ai/autonomous-desk/main/
 The installer detects which agent CLIs you have and installs for each. Then
 restart your agent and say `pair my display`.
 
+> Previously installed `vibe-desk-display`? It was renamed to `thinking-desk` —
+> remove the old plugin so the desk hook doesn't fire twice. The installer does
+> this for you; details in [software/](software/README.md).
+
 Both integrations support OTP pairing, completion notifications, approval
 pings, account usage, local builder insights, and automatic LAN reconnect.
 They share the paired-device configuration, so the same display can work with

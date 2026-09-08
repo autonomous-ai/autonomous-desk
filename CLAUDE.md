@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 **Autonomous Desk** — an open-hardware "Thinking Desk" with an LCD, plus its software:
-two sibling `vibe-desk-display` plugins (in `software/`) — one for **Claude Code**,
+two sibling `thinking-desk` plugins (in `software/`) — one for **Claude Code**,
 one for **Codex**. Each shows task-done + account usage % on the desk LCD, buzzes when
 its agent needs approval/input, and analyzes that agent's local sessions into a
 "builder profile". Nothing leaves the machine except the agent's own usage call

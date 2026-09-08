@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "vibe-desk-display",
+      "name": "thinking-desk",
       "source": {
         "source": "local",
         "path": "./software/codex"

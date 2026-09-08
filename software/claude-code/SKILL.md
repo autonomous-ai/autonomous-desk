@@ -1,5 +1,5 @@
 ---
-name: vibe-desk-display
+name: thinking-desk
 description: >
   Interact with the user's desk display device (Thinking Desk) over LAN.
   Supports pairing, sending notifications with plain text,
@@ -308,7 +308,7 @@ The hooks read these flags on every run, so changes take effect immediately — 
 
 ## 6. Usage Monitor (One-Shot)
 
-Fetch real usage data from the Claude Code API and display immediately. Used by the `/vibe-desk-display:usage` slash command or as part of the Task Done flow (section 5).
+Fetch real usage data from the Claude Code API and display immediately. Used by the `/thinking-desk:usage` slash command or as part of the Task Done flow (section 5).
 
 **When to use:** "show my usage on display", "update usage now", "refresh display".
 
@@ -437,7 +437,7 @@ Claude Code session transcripts (`~/.claude/projects/**/*.jsonl`). Everything is
 computed on the machine — no network, no upload.
 
 **When to use:** "show my builder profile", "what kind of coder am I",
-"/vibe-desk-display:insights", "rotate my insights on the display".
+"/thinking-desk:insights", "rotate my insights on the display".
 
 ### Run
 

@@ -100,7 +100,7 @@ class InsightsAndPluginTests(unittest.TestCase):
             hooks = json.load(handle)["hooks"]
         # The plugin name is fixed; it is intentionally not tied to the
         # directory name (this package lives at software/codex/).
-        self.assertEqual(manifest["name"], "vibe-desk-display")
+        self.assertEqual(manifest["name"], "thinking-desk")
         self.assertIn("Stop", hooks)
         self.assertIn("PermissionRequest", hooks)
         self.assertNotIn("Notification", hooks)

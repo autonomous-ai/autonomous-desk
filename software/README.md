@@ -33,17 +33,38 @@ less install.sh && sh install.sh
 
 ```bash
 claude plugin marketplace add https://github.com/autonomous-ai/autonomous-desk
-claude plugin install vibe-desk-display@autonomous-desk
+claude plugin install thinking-desk@autonomous-desk
 ```
 
 **Codex**
 
 ```bash
 codex plugin marketplace add https://github.com/autonomous-ai/autonomous-desk
-codex plugin add vibe-desk-display@autonomous-desk
+codex plugin add thinking-desk@autonomous-desk
 ```
 
 </details>
+
+---
+
+## Already using `vibe-desk-display`?
+
+The plugin was renamed to **`thinking-desk`**. Please **remove the old one** —
+it is a separate plugin id, so leaving it installed registers the desk hook
+twice and you get two cards and two buzzes for every finished task.
+
+The installer above removes it for you. To do it by hand:
+
+```bash
+claude plugin uninstall vibe-desk-display     # Claude Code
+codex plugin remove vibe-desk-display         # Codex
+```
+
+Your paired display, threshold, and settings live in `~/.config/autonomous-lcd.json`
+and are **not** tied to the plugin name — they carry over untouched, so you do not
+need to pair again. The only user-visible change is the slash commands:
+`/vibe-desk-display:usage` is now `/thinking-desk:usage` (same for `:insights`
+and `:notify`).
 
 ---
 

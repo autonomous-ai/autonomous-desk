@@ -14,6 +14,14 @@ Turn your Thinking Desk into a live Claude Code usage monitor.
 
 ## Install
 
+> **Upgrading?** This plugin was previously called `vibe-desk-display`. Remove that
+> version first — two plugin ids both registering the desk hook means duplicate
+> cards and buzzes. Pairing and settings carry over.
+>
+> ```bash
+> claude plugin uninstall vibe-desk-display
+> ```
+
 Open your terminal and run:
 
 ```bash
@@ -21,7 +29,7 @@ claude plugins marketplace add https://github.com/autonomous-ai/autonomous-desk
 ```
 
 ```bash
-claude plugins install vibe-desk-display
+claude plugins install thinking-desk
 ```
 
 Then **restart Claude Code** (exit and reopen).
@@ -70,7 +78,7 @@ Set it lower (e.g. `60`) to see usage more often, or higher (e.g. `90`) to only 
 You can also:
 
 - Say `notify my display` to send a custom message to the screen
-- Type `/vibe-desk-display:usage` to refresh the usage display immediately
+- Type `/thinking-desk:usage` to refresh the usage display immediately
 - Say `unpair my display` to disconnect the device
 
 ---
@@ -131,7 +139,7 @@ nothing is uploaded.
 Type:
 
 ```
-/vibe-desk-display:insights
+/thinking-desk:insights
 ```
 
 or just ask "show my builder profile". The display rotates through a set of cards:
@@ -188,17 +196,17 @@ Go to **Marketplaces → autonomous-desk → Enable auto-update**.
 Pull the latest version right now:
 
 ```bash
-claude plugins update vibe-desk-display@autonomous-desk
+claude plugins update thinking-desk@autonomous-desk
 ```
 
 Restart Claude Code after updating.
 
-> The reference is `vibe-desk-display@autonomous-desk` — that's `plugin-name@marketplace-name`. To force a marketplace refresh first, run `/plugin marketplace update autonomous-desk`, then update.
+> The reference is `thinking-desk@autonomous-desk` — that's `plugin-name@marketplace-name`. To force a marketplace refresh first, run `/plugin marketplace update autonomous-desk`, then update.
 
 ---
 
 ## Uninstall
 
 ```bash
-claude plugins uninstall vibe-desk-display
+claude plugins uninstall thinking-desk
 ```

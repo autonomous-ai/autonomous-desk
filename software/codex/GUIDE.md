@@ -2,9 +2,17 @@
 
 ## 1. Install
 
+> **Upgrading?** This plugin was previously called `vibe-desk-display`. Remove that
+> version first — two plugin ids both registering the desk hook means duplicate
+> cards and buzzes. Pairing and settings carry over.
+>
+> ```bash
+> codex plugin remove vibe-desk-display
+> ```
+
 ```bash
 codex plugin marketplace add https://github.com/autonomous-ai/autonomous-desk
-codex plugin add vibe-desk-display@autonomous-desk
+codex plugin add thinking-desk@autonomous-desk
 ```
 
 Restart Codex or start a new task so the new skill and hooks are loaded.
@@ -118,7 +126,7 @@ From the repository root:
 
 ```bash
 codex plugin marketplace add .
-codex plugin add vibe-desk-display@autonomous-desk
+codex plugin add thinking-desk@autonomous-desk
 ```
 
 After changing the plugin, reinstall it and start a new task. Validate the
@@ -132,7 +140,7 @@ python3 -m unittest discover -s software/codex/tests -v
 ## Uninstall
 
 ```bash
-codex plugin remove vibe-desk-display
+codex plugin remove thinking-desk
 ```
 
 Removing the plugin leaves the paired-device configuration in place so the

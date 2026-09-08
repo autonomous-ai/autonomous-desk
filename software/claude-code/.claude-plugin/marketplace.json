@@ -1,5 +1,5 @@
 {
-  "name": "vibe-desk-display",
+  "name": "thinking-desk",
   "description": "Desk display plugin for Claude Code",
   "owner": {
     "name": "Autonomous",
@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "vibe-desk-display",
+      "name": "thinking-desk",
       "description": "Turn your Thinking Desk into a live Claude Code usage monitor",
       "source": {
         "source": "git-subdir",

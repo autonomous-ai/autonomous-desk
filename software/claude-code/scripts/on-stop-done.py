@@ -186,7 +186,7 @@ def local_version():
 def _fetch_latest_version():
     try:
         req = urllib.request.Request(
-            PLUGIN_JSON_URL, headers={"User-Agent": "vibe-desk-display"}
+            PLUGIN_JSON_URL, headers={"User-Agent": "thinking-desk"}
         )
         with urllib.request.urlopen(req, timeout=8) as resp:
             return json.loads(resp.read()).get("version")
